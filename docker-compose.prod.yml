@@ -1,0 +1,60 @@
+# 生产部署编排
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+# 适配「服务器已有 nginx（如 kids.mxzshs.com）」：本编排不含 nginx、不抢 80/443，
+# 只把前端暴露到宿主机 ${WEB_PORT:-8090}，由宿主机已有的 nginx 反代 + TLS（见 deploy/radar.nginx.conf）。
+# Postgres / Redis 不映射宿主端口（仅 compose 内网），不会和 kids 的 5432/6379 冲突。
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-radar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?must set}
+      POSTGRES_DB: ${POSTGRES_DB:-github_radar}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-radar}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-radar}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-github_radar}
+      REDIS_URL: redis://redis:6379/0
+      ENABLE_SCHEDULER: "true"   # 生产开启每日自动流水线
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        API_BASE: http://backend:8077
+        SITE_URL: ${SITE_URL:?must set}
+    restart: unless-stopped
+    # 只绑到 127.0.0.1，避免直接对公网暴露；由宿主 nginx 反代
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8090}:3000"
+    environment:
+      API_BASE: http://backend:8077
+      SITE_URL: ${SITE_URL}
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

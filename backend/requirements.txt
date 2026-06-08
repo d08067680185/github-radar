@@ -1,0 +1,20 @@
+fastapi>=0.115
+uvicorn[standard]>=0.34
+sqlalchemy>=2.0.36
+psycopg[binary]>=3.2.10
+pydantic>=2.10
+pydantic-settings>=2.7
+httpx>=0.28
+apscheduler>=3.11
+redis>=5.2
+python-dotenv>=1.0
+tenacity>=9.0
+pyjwt>=2.10
+bcrypt>=4.2
+email-validator>=2.2
+# 可选：AI 摘要（Phase 4，未配置 key 时不调用）
+anthropic>=0.49
+# 数据库迁移
+alembic>=1.13
+# 可选：错误监控（未配置 SENTRY_DSN 时不启用）
+sentry-sdk>=2.0

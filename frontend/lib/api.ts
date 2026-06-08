@@ -1,0 +1,73 @@
+import type { Project, ProjectDetail, SnapshotPoint, Category, Stats } from "./types";
+
+const API_BASE = process.env.API_BASE || "http://127.0.0.1:8077";
+
+// ISR：默认每 1 小时增量再生成（榜单日更，1h 足够新鲜又省压）
+const REVALIDATE = 3600;
+
+async function get<T>(path: string, revalidate: number = REVALIDATE): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    next: { revalidate },
+  });
+  if (!res.ok) throw new Error(`API ${path} -> ${res.status}`);
+  return res.json();
+}
+
+// 返回数据 + 总数（读 X-Total-Count 头），用于翻页
+export interface Paged {
+  items: Project[];
+  total: number;
+}
+async function getPaged(path: string, revalidate: number = REVALIDATE): Promise<Paged> {
+  const res = await fetch(`${API_BASE}${path}`, { next: { revalidate } });
+  if (!res.ok) throw new Error(`API ${path} -> ${res.status}`);
+  const total = Number(res.headers.get("X-Total-Count") || 0);
+  const items = await res.json();
+  return { items, total };
+}
+
+interface RankParams {
+  language?: string;
+  category?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface SearchParams {
+  q?: string;
+  language?: string;
+  category?: string;
+  min_stars?: number;
+  sort?: "score" | "growth" | "stars" | "activity";
+  limit?: number;
+  offset?: number;
+}
+
+function qs(params: RankParams | SearchParams): string {
+  const sp = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== "" && v !== null) sp.set(k, String(v));
+  });
+  const s = sp.toString();
+  return s ? `?${s}` : "";
+}
+
+export const PER_PAGE = 30;
+
+export const api = {
+  top: (p: RankParams = {}) => get<Project[]>(`/api/rankings/top${qs(p)}`),
+  trending: (p: RankParams = {}) => get<Project[]>(`/api/rankings/trending${qs(p)}`),
+  topPaged: (p: RankParams = {}) => getPaged(`/api/rankings/top${qs(p)}`),
+  trendingPaged: (p: RankParams = {}) => getPaged(`/api/rankings/trending${qs(p)}`),
+  languages: () => get<string[]>("/api/languages"),
+  languageStats: () => get<Category[]>("/api/languages/stats"),
+  categories: () => get<Category[]>("/api/categories"),
+  stats: () => get<Stats>("/api/stats"),
+  project: (owner: string, name: string) =>
+    get<ProjectDetail>(`/api/projects/${owner}/${name}`),
+  history: (owner: string, name: string, days = 90) =>
+    get<SnapshotPoint[]>(`/api/projects/${owner}/${name}/history?days=${days}`),
+  similar: (owner: string, name: string, limit = 6) =>
+    get<Project[]>(`/api/projects/${owner}/${name}/similar?limit=${limit}`),
+  searchPaged: (p: SearchParams) => getPaged(`/api/search${qs(p)}`, 60),
+};

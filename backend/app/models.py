@@ -1,0 +1,128 @@
+from datetime import datetime, date
+
+from sqlalchemy import (
+    BigInteger, String, Text, Integer, Numeric, Boolean,
+    DateTime, Date, ForeignKey, UniqueConstraint, Index, func,
+)
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.db import Base
+
+
+class Project(Base):
+    """项目主表 —— 当前快照 + 评分。"""
+    __tablename__ = "projects"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    github_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True)
+    full_name: Mapped[str] = mapped_column(Text, unique=True)  # owner/repo
+    owner: Mapped[str] = mapped_column(Text)
+    name: Mapped[str] = mapped_column(Text)
+
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    homepage: Mapped[str | None] = mapped_column(Text, nullable=True)
+    language: Mapped[str | None] = mapped_column(String(64), index=True, nullable=True)
+    topics: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
+    license: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    readme_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    stars: Mapped[int] = mapped_column(Integer, default=0)
+    forks: Mapped[int] = mapped_column(Integer, default=0)
+    open_issues: Mapped[int] = mapped_column(Integer, default=0)
+    contributors: Mapped[int] = mapped_column(Integer, default=0)
+    watchers: Mapped[int] = mapped_column(Integer, default=0)
+
+    created_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    pushed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_release_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # 评分（每日重算）
+    score: Mapped[float] = mapped_column(Numeric(6, 2), default=0, index=True)
+    growth_score: Mapped[float] = mapped_column(Numeric(6, 2), default=0)
+    activity_score: Mapped[float] = mapped_column(Numeric(6, 2), default=0)
+    health_score: Mapped[float] = mapped_column(Numeric(6, 2), default=0)
+    heat_score: Mapped[float] = mapped_column(Numeric(6, 2), default=0)
+
+    category: Mapped[str | None] = mapped_column(String(64), index=True, nullable=True)
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    # 最近一次被发现任务命中的时间——长期未命中视为僵尸（删除/转移/跌出阈值），可清理
+    last_seen_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )
+
+    snapshots: Mapped[list["ProjectSnapshot"]] = relationship(
+        back_populates="project", cascade="all, delete-orphan"
+    )
+
+
+class ProjectSnapshot(Base):
+    """历史快照 —— 每日一条/项目。系统护城河，用于算增长趋势。"""
+    __tablename__ = "project_snapshots"
+    __table_args__ = (
+        UniqueConstraint("project_id", "snapshot_date", name="uq_snapshot_project_date"),
+        Index("idx_snapshots_project_date", "project_id", "snapshot_date"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    project_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("projects.id", ondelete="CASCADE")
+    )
+    snapshot_date: Mapped[date] = mapped_column(Date)
+    stars: Mapped[int] = mapped_column(Integer)
+    forks: Mapped[int] = mapped_column(Integer)
+    open_issues: Mapped[int] = mapped_column(Integer)
+    contributors: Mapped[int] = mapped_column(Integer, default=0)
+
+    project: Mapped["Project"] = relationship(back_populates="snapshots")
+
+
+class CollectLog(Base):
+    """采集任务日志 —— 监控限流/失败。"""
+    __tablename__ = "collect_logs"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    task: Mapped[str] = mapped_column(String(64))          # discover / snapshot / score
+    status: Mapped[str] = mapped_column(String(32))        # ok / error
+    detail: Mapped[str | None] = mapped_column(Text, nullable=True)
+    repos_affected: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class User(Base):
+    """用户。"""
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    favorites: Mapped[list["Favorite"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+
+
+class Favorite(Base):
+    """用户收藏的项目。"""
+    __tablename__ = "favorites"
+    __table_args__ = (
+        UniqueConstraint("user_id", "project_id", name="uq_favorite_user_project"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    project_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("projects.id", ondelete="CASCADE")
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    user: Mapped["User"] = relationship(back_populates="favorites")
+    project: Mapped["Project"] = relationship()

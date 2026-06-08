@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+node_modules/
+.next/
+*.log
+.DS_Store
+.env.prod
+backups/
+playwright-report/
+test-results/
+.env.local
+.env*.local

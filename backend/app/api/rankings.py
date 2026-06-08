@@ -1,0 +1,148 @@
+"""榜单接口：综合优质榜 + Trending 榜。结果走 Redis 缓存。"""
+from fastapi import APIRouter, Depends, Query, Response
+from sqlalchemy import select, desc, func
+from sqlalchemy.orm import Session
+
+from app.db import get_db
+from app.models import Project, CollectLog
+from app.schemas import ProjectOut, CategoryOut
+from app.scorer.classify import all_categories
+from app.cache import cached
+
+router = APIRouter(prefix="/api", tags=["rankings"])
+
+
+def _base_query(language: str | None, category: str | None):
+    stmt = select(Project).where(Project.is_archived.is_(False))
+    if language:
+        stmt = stmt.where(Project.language == language)
+    if category:
+        stmt = stmt.where(Project.category == category)
+    return stmt
+
+
+def _count(db: Session, language: str | None, category: str | None) -> int:
+    """匹配条件的总数（缓存），用于翻页。"""
+    def loader():
+        stmt = select(func.count()).select_from(Project).where(Project.is_archived.is_(False))
+        if language:
+            stmt = stmt.where(Project.language == language)
+        if category:
+            stmt = stmt.where(Project.category == category)
+        return db.execute(stmt).scalar_one()
+    return cached("count", {"lang": language, "cat": category}, loader)
+
+
+def _serialize(projects) -> list[dict]:
+    return [ProjectOut.model_validate(p).model_dump(mode="json") for p in projects]
+
+
+@router.get("/rankings/top", response_model=list[ProjectOut])
+def top_ranking(
+    response: Response,
+    db: Session = Depends(get_db),
+    language: str | None = Query(None),
+    category: str | None = Query(None),
+    limit: int = Query(50, le=200),
+    offset: int = Query(0, ge=0),
+):
+    """综合优质榜：按 score 降序（长期靠谱）。总数见 X-Total-Count 头。"""
+    def loader():
+        stmt = (
+            _base_query(language, category)
+            .order_by(desc(Project.score)).offset(offset).limit(limit)
+        )
+        return _serialize(db.execute(stmt).scalars().all())
+    response.headers["X-Total-Count"] = str(_count(db, language, category))
+    return cached("top", {"lang": language, "cat": category, "limit": limit, "off": offset}, loader)
+
+
+@router.get("/rankings/trending", response_model=list[ProjectOut])
+def trending_ranking(
+    response: Response,
+    db: Session = Depends(get_db),
+    language: str | None = Query(None),
+    category: str | None = Query(None),
+    limit: int = Query(50, le=200),
+    offset: int = Query(0, ge=0),
+):
+    """Trending 榜：按 growth_score 降序（正在火）。总数见 X-Total-Count 头。"""
+    def loader():
+        stmt = (
+            _base_query(language, category)
+            .order_by(desc(Project.growth_score), desc(Project.score))
+            .offset(offset).limit(limit)
+        )
+        return _serialize(db.execute(stmt).scalars().all())
+    response.headers["X-Total-Count"] = str(_count(db, language, category))
+    return cached("trending", {"lang": language, "cat": category, "limit": limit, "off": offset}, loader)
+
+
+@router.get("/languages", response_model=list[str])
+def languages(db: Session = Depends(get_db)):
+    """已收录的语言列表（用于前端筛选）。"""
+    def loader():
+        rows = db.execute(
+            select(Project.language).where(Project.language.is_not(None)).distinct()
+        ).scalars().all()
+        return sorted(rows)
+    return cached("languages", {}, loader)
+
+
+@router.get("/stats")
+def stats(db: Session = Depends(get_db)):
+    """站点总览统计（首页 Hero 用）。"""
+    def loader():
+        total = db.execute(
+            select(func.count()).select_from(Project).where(Project.is_archived.is_(False))
+        ).scalar_one()
+        langs = db.execute(
+            select(func.count(func.distinct(Project.language))).where(Project.language.is_not(None))
+        ).scalar_one()
+        cats = db.execute(
+            select(func.count(func.distinct(Project.category))).where(Project.category.is_not(None))
+        ).scalar_one()
+        max_stars = db.execute(select(func.max(Project.stars))).scalar_one() or 0
+        updated = db.execute(
+            select(func.max(CollectLog.created_at)).where(
+                CollectLog.task == "score", CollectLog.status == "ok"
+            )
+        ).scalar_one_or_none()
+        return {
+            "projects": total, "languages": langs, "categories": cats,
+            "max_stars": max_stars,
+            "updated_at": updated.isoformat() if updated else None,
+        }
+    return cached("stats", {}, loader)
+
+
+@router.get("/languages/stats", response_model=list[CategoryOut])
+def language_stats(db: Session = Depends(get_db)):
+    """各语言项目数（按数量降序），用于语言页展示。复用 CategoryOut(slug=name)。"""
+    def loader():
+        rows = db.execute(
+            select(Project.language, func.count())
+            .where(Project.language.is_not(None), Project.is_archived.is_(False))
+            .group_by(Project.language)
+            .order_by(func.count().desc())
+        ).all()
+        return [CategoryOut(slug=lang, name=lang, count=n).model_dump() for lang, n in rows]
+    return cached("lang_stats", {}, loader)
+
+
+@router.get("/categories", response_model=list[CategoryOut])
+def categories(db: Session = Depends(get_db)):
+    """领域分类列表 + 各分类项目数（用于导航/子榜）。"""
+    def loader():
+        counts = dict(
+            db.execute(
+                select(Project.category, func.count())
+                .where(Project.category.is_not(None))
+                .group_by(Project.category)
+            ).all()
+        )
+        return [
+            CategoryOut(slug=c["slug"], name=c["name"], count=counts.get(c["slug"], 0)).model_dump()
+            for c in all_categories()
+        ]
+    return cached("categories", {}, loader)
