@@ -7,8 +7,12 @@ export const revalidate = 3600;
 
 // 预生成所有语言子榜（SSG）
 export async function generateStaticParams() {
-  const langs = await api.languages();
-  return langs.map((language) => ({ language }));
+  try {
+    const langs = await api.languages();
+    return langs.map((language) => ({ language }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({

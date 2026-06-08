@@ -7,8 +7,12 @@ import Pagination from "@/components/Pagination";
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  const cats = await api.categories();
-  return cats.map((c) => ({ slug: c.slug }));
+  try {
+    const cats = await api.categories();
+    return cats.map((c) => ({ slug: c.slug }));
+  } catch {
+    return [];
+  }
 }
 
 async function findCategory(slug: string) {
