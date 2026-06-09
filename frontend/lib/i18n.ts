@@ -7,7 +7,10 @@ export const dict = {
   zh: {
     // 导航
     nav_top: "综合榜", nav_trending: "Trending", nav_categories: "分类",
-    nav_languages: "语言", nav_search: "搜索", nav_account: "我的", nav_about: "关于",
+    nav_languages: "语言", nav_search: "搜索", nav_map: "星图", nav_account: "我的", nav_about: "关于",
+    // 星图地图
+    map_h: "🌌 开源星图", map_sub: "头部项目的星系全景 —— 气泡=项目，大小=Star，颜色=领域，按领域聚成星团。悬停看详情、点击进入、可拖拽。",
+    map_hint: "悬停查看 · 点击进入项目 · 拖拽移动 · 点图例高亮领域", map_loading: "正在排布星系…",
     // 通用
     rss: "📡 RSS 订阅", viewAll: "查看全部 →", backToList: "← 返回榜单",
     score: "评分", growth: "增长", activity: "活跃", health: "健康", heat: "热度",
@@ -49,7 +52,9 @@ export const dict = {
   },
   en: {
     nav_top: "Top", nav_trending: "Trending", nav_categories: "Categories",
-    nav_languages: "Languages", nav_search: "Search", nav_account: "Account", nav_about: "About",
+    nav_languages: "Languages", nav_search: "Search", nav_map: "Galaxy", nav_account: "Account", nav_about: "About",
+    map_h: "🌌 Open Source Galaxy", map_sub: "A galaxy of top projects — bubble = project, size = stars, color = domain, clustered by domain. Hover for details, click to open, drag to move.",
+    map_hint: "Hover for details · click to open · drag to move · click legend to highlight", map_loading: "Arranging the galaxy…",
     rss: "📡 RSS", viewAll: "View all →", backToList: "← Back to list",
     score: "Score", growth: "Growth", activity: "Activity", health: "Health", heat: "Heat",
     prev: "← Prev", next: "Next →",
@@ -109,4 +114,30 @@ const CAT_LABELS: Record<string, { zh: string; en: string }> = {
 export function catName(slug: string | null | undefined, locale: Locale, fallback?: string | null): string {
   if (!slug) return fallback || "";
   return CAT_LABELS[slug]?.[locale] || fallback || slug;
+}
+
+// 领域固定顺序（决定星系团在画布上沿圆周的角度位置）
+export const CAT_ORDER = [
+  "ai-ml", "web-frontend", "backend", "database", "devops",
+  "data", "mobile", "security", "devtools", "game-graphics", "blockchain",
+];
+
+// 领域 slug → 颜色（气泡星系 + 图例共用，11 色尽量区分）
+export const CAT_COLORS: Record<string, string> = {
+  "ai-ml": "#7c5cff",        // 紫
+  "web-frontend": "#2dd4bf", // 青
+  backend: "#3b82f6",        // 蓝
+  database: "#f59e0b",       // 琥珀
+  devops: "#22c55e",         // 绿
+  data: "#06b6d4",           // 天蓝
+  mobile: "#ec4899",         // 粉
+  security: "#ef4444",       // 红
+  devtools: "#a3a3a3",       // 灰
+  "game-graphics": "#f97316",// 橙
+  blockchain: "#eab308",     // 金
+};
+export const CAT_FALLBACK_COLOR = "#94a3b8"; // 未分类/未知
+
+export function catColor(slug: string | null | undefined): string {
+  return (slug && CAT_COLORS[slug]) || CAT_FALLBACK_COLOR;
 }

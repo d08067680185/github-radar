@@ -1,4 +1,4 @@
-import type { Project, ProjectDetail, SnapshotPoint, Category, Stats } from "./types";
+import type { Project, ProjectDetail, SnapshotPoint, Category, Stats, MapNode } from "./types";
 
 const API_BASE = process.env.API_BASE || "http://127.0.0.1:8077";
 
@@ -63,6 +63,7 @@ export const api = {
   languageStats: () => get<Category[]>("/api/languages/stats"),
   categories: () => get<Category[]>("/api/categories"),
   stats: () => get<Stats>("/api/stats"),
+  mapNodes: (limit = 400) => get<MapNode[]>(`/api/map?limit=${limit}`),
   project: (owner: string, name: string) =>
     get<ProjectDetail>(`/api/projects/${owner}/${name}`),
   history: (owner: string, name: string, days = 90) =>

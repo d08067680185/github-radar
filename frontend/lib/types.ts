@@ -47,3 +47,12 @@ export interface Stats {
   max_stars: number;
   updated_at: string | null;
 }
+
+export interface MapNode {
+  full_name: string;
+  stars: number;
+  score: number;
+  growth_score: number;
+  category: string | null;
+  language: string | null;
+}

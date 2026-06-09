@@ -46,6 +46,18 @@ class CategoryOut(BaseModel):
     count: int = 0
 
 
+class MapNodeOut(BaseModel):
+    """气泡星系地图的精简节点（payload 比 ProjectOut 小很多）。"""
+    model_config = ConfigDict(from_attributes=True)
+
+    full_name: str
+    stars: int
+    score: float
+    growth_score: float
+    category: str | None
+    language: str | None
+
+
 # ---- 认证 / 用户 ----
 from pydantic import EmailStr
 

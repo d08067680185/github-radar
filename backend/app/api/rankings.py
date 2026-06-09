@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models import Project, CollectLog
-from app.schemas import ProjectOut, CategoryOut
+from app.schemas import ProjectOut, CategoryOut, MapNodeOut
 from app.scorer.classify import all_categories
 from app.cache import cached
 
@@ -87,6 +87,28 @@ def languages(db: Session = Depends(get_db)):
         ).scalars().all()
         return sorted(rows)
     return cached("languages", {}, loader)
+
+
+@router.get("/map", response_model=list[MapNodeOut])
+def map_nodes(db: Session = Depends(get_db), limit: int = Query(400, le=800)):
+    """气泡星系地图节点：按 score 降序取头部 N 个精简节点（缓存）。"""
+    def loader():
+        rows = db.execute(
+            select(
+                Project.full_name, Project.stars, Project.score,
+                Project.growth_score, Project.category, Project.language,
+            )
+            .where(Project.is_archived.is_(False))
+            .order_by(desc(Project.score))
+            .limit(limit)
+        ).all()
+        return [
+            {"full_name": r.full_name, "stars": r.stars, "score": float(r.score),
+             "growth_score": float(r.growth_score), "category": r.category,
+             "language": r.language}
+            for r in rows
+        ]
+    return cached("map", {"limit": limit}, loader)
 
 
 @router.get("/stats")

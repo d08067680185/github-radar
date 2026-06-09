@@ -11,6 +11,7 @@ export default function Nav() {
     { href: "/trending", label: t.nav_trending },
     { href: "/categories", label: t.nav_categories },
     { href: "/languages", label: t.nav_languages },
+    { href: "/map", label: t.nav_map },
     { href: "/search", label: t.nav_search },
     { href: "/account", label: t.nav_account },
   ];

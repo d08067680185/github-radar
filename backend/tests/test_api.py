@@ -62,6 +62,24 @@ def test_similar_same_category_first(client, make_project):
     assert names[0] == "x/samecat"                # 同领域优先于同语言
 
 
+def test_map_nodes(client, make_project):
+    make_project(full_name="a/low", score=10, stars=500, category="ai-ml", language="Python")
+    make_project(full_name="a/high", score=99, stars=9000, category="web-frontend", language="TS")
+    make_project(full_name="a/arch", score=80, is_archived=True)
+    out = client.get("/api/map?limit=10").json()
+    names = [n["full_name"] for n in out]
+    assert names == ["a/high", "a/low"]          # 按 score 降序、排除归档
+    # 精简字段齐全，且不含 description/topics 等重字段
+    n = out[0]
+    assert set(n) == {"full_name", "stars", "score", "growth_score", "category", "language"}
+
+
+def test_map_respects_limit(client, make_project):
+    for i in range(5):
+        make_project(score=i)
+    assert len(client.get("/api/map?limit=3").json()) == 3
+
+
 def test_stats(client, make_project):
     make_project(language="Python", category="ai-ml", stars=1000)
     make_project(language="Rust", category="devops", stars=9000)
