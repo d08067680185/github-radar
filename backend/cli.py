@@ -55,7 +55,7 @@ def cmd_summarize():
     db = SessionLocal()
     try:
         n = summarize_backfill(db)
-        print(f"✅ summarize 完成：{n} 条中文简介")
+        print(f"✅ summarize 完成：{n} 条双语简介（中文 readme_summary + 英文 readme_summary_en）")
     finally:
         db.close()
 

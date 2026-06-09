@@ -17,6 +17,7 @@ export interface Project {
   heat_score: number;
   category: string | null;
   readme_summary: string | null;
+  readme_summary_en: string | null;
   pushed_at: string | null;
 }
 

@@ -25,7 +25,8 @@ class Project(Base):
     language: Mapped[str | None] = mapped_column(String(64), index=True, nullable=True)
     topics: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
     license: Mapped[str | None] = mapped_column(String(128), nullable=True)
-    readme_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    readme_summary: Mapped[str | None] = mapped_column(Text, nullable=True)        # 中文一句话简介
+    readme_summary_en: Mapped[str | None] = mapped_column(Text, nullable=True)     # 英文一句话简介
 
     stars: Mapped[int] = mapped_column(Integer, default=0)
     forks: Mapped[int] = mapped_column(Integer, default=0)

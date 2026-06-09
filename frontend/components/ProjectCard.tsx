@@ -19,7 +19,7 @@ export default function ProjectCard({
   rank: number;
   metric?: "score" | "growth_score";
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const dims = [
     { key: "growth_score", t: t.growth },
     { key: "activity_score", t: t.activity },
@@ -38,8 +38,8 @@ export default function ProjectCard({
         <a className="repo-name" href={`/repo/${project.full_name}`}>
           {project.full_name}
         </a>
-        <div className={`desc ${isSyntheticSummary(project) ? "desc-faint" : ""}`}>
-          {projectSummary(project)}
+        <div className={`desc ${isSyntheticSummary(project, locale) ? "desc-faint" : ""}`}>
+          {projectSummary(project, locale)}
         </div>
         <div className="meta">
           {project.language && (

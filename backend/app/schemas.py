@@ -23,6 +23,7 @@ class ProjectOut(BaseModel):
     heat_score: float
     category: str | None
     readme_summary: str | None = None
+    readme_summary_en: str | None = None
     pushed_at: datetime | None
 
 

@@ -65,8 +65,8 @@ GitHub Search API 单查询硬上限 1000 条。`github_client.search_repos_shar
 ### 主题切换的防闪烁
 `layout.tsx` 在 `<head>` 注入 inline 脚本，在 React 水合前就给 `<html>` 设 `data-theme`；因此 `<html>` 必须带 `suppressHydrationWarning`（否则水合报错）。浅色变量在 `globals.css` 的 `:root[data-theme="light"]`。
 
-### AI 中文简介（`scorer/summarize.py`）
-给项目生成一句话中文亮点，写入 `Project.readme_summary`。**模型用 Haiku 4.5（最便宜）**；批量回填走 **Batches API**（再打 5 折，`summarize_backfill`，异步轮询），日常少量用同步 `summarize_missing`。只处理「`readme_summary IS NULL` 且有素材(description 或 topics)」的项目，幂等可续跑。需 `ANTHROPIC_API_KEY`（未配/余额不足时**优雅跳过、返回 0、不崩流水线**）。已接入 `daily_pipeline`（best-effort）。前端 `projectSummary()`（`lib/format.ts`）**优先显示 `readme_summary`**（中文），无则回退 GitHub 描述，再无则「语言·topics」——所以卡片/详情页都会优先展示中文简介。`readme_summary` 已加入 `ProjectOut`（列表接口）。
+### AI 双语简介（`scorer/summarize.py`）
+给项目生成一句话亮点，**中文写入 `Project.readme_summary`、英文写入 `Project.readme_summary_en`**（两套 system 提示词，见 `LANGS`）。**模型用 Haiku 4.5（最便宜）**；批量回填走 **Batches API**（再打 5 折，`summarize_backfill`，异步轮询）——**每个项目按缺失语言各发一条请求**，`custom_id` 形如 `p-{id}-zh` / `p-{id}-en`；日常少量用同步 `summarize_missing`。只处理「缺中文 或 缺英文」且有素材(description 或 topics)的项目，幂等可续跑。需 `ANTHROPIC_API_KEY`（未配/余额不足时**优雅跳过、返回 0、不崩流水线**）。已接入 `daily_pipeline`（best-effort）。前端 `projectSummary(p, locale)` / `aiSummary(p, locale)`（`lib/format.ts`）**按当前 locale 择一**：en 用 `readme_summary_en`、zh 用 `readme_summary`，无则回退 GitHub 描述，再无则「语言·topics」。两个字段都已加入 `ProjectOut`。
 > 坑：`mentionableUsers.totalCount` 等**昂贵聚合字段不能进 50 节点的批量 search 查询**（触发 `RESOURCE_LIMITS_EXCEEDED`，曾搞挂 discover，已废弃 contributors 采集）。
 
 ### i18n（中英双语，cookie 驱动）

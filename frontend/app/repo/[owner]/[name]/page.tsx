@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
-import { projectSummary } from "@/lib/format";
+import { projectSummary, aiSummary } from "@/lib/format";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import { catName } from "@/lib/i18n";
 import RankingList from "@/components/RankingList";
@@ -34,9 +34,12 @@ export async function generateMetadata({
   const data = await load(owner, name);
   if (!data) return {};
   const { project } = data;
+  const locale = await getLocale();
   const desc =
-    project.readme_summary || project.description ||
-    `${project.full_name} 的开源项目评分、star 趋势与维护活跃度分析。`;
+    aiSummary(project, locale) || project.description ||
+    (locale === "en"
+      ? `Open-source score, star trend and maintenance activity for ${project.full_name}.`
+      : `${project.full_name} 的开源项目评分、star 趋势与维护活跃度分析。`);
   const title = `${project.full_name} — 综合评分 ${project.score}`;
   return {
     title,
@@ -89,13 +92,13 @@ export default async function RepoPage({
           <FavoriteButton fullName={project.full_name} />
         </div>
       </div>
-      {project.readme_summary && (
-        <p style={{ fontSize: 15, color: "var(--text)", margin: "0 0 8px" }}>✨ {project.readme_summary}</p>
+      {aiSummary(project, locale) && (
+        <p style={{ fontSize: 15, color: "var(--text)", margin: "0 0 8px" }}>✨ {aiSummary(project, locale)}</p>
       )}
       {project.description ? (
         <p className="page-sub">{project.description}</p>
       ) : (
-        !project.readme_summary && <p className="page-sub">{projectSummary(project)}</p>
+        !aiSummary(project, locale) && <p className="page-sub">{projectSummary(project, locale)}</p>
       )}
 
       <div className="meta" style={{ marginBottom: 16 }}>
