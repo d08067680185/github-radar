@@ -3,17 +3,9 @@ import { api, PER_PAGE } from "@/lib/api";
 import RankingList from "@/components/RankingList";
 import Pagination from "@/components/Pagination";
 
-export const revalidate = 3600;
-
-// 预生成所有语言子榜（SSG）
-export async function generateStaticParams() {
-  try {
-    const langs = await api.languages();
-    return langs.map((language) => ({ language }));
-  } catch {
-    return [];
-  }
-}
+// 动态渲染（仍为 SSR，SEO 不受影响）：避免构建期依赖 backend 在线做 SSG，
+// 且页面读 cookie（i18n）与 ISR 静态化冲突会 500；后端榜单有 Redis 缓存撑性能
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

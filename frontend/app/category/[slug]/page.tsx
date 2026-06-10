@@ -4,16 +4,9 @@ import { api, PER_PAGE } from "@/lib/api";
 import RankingList from "@/components/RankingList";
 import Pagination from "@/components/Pagination";
 
-export const revalidate = 3600;
-
-export async function generateStaticParams() {
-  try {
-    const cats = await api.categories();
-    return cats.map((c) => ({ slug: c.slug }));
-  } catch {
-    return [];
-  }
-}
+// 动态渲染（仍为 SSR，SEO 不受影响）：避免构建期依赖 backend 在线做 SSG，
+// 且页面读 cookie（i18n）与 ISR 静态化冲突会 500；后端榜单有 Redis 缓存撑性能
+export const dynamic = "force-dynamic";
 
 async function findCategory(slug: string) {
   const cats = await api.categories();
