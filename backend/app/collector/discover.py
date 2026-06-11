@@ -61,6 +61,21 @@ def discover(db: Session, min_stars: int | None = None, max_repos: int | None = 
             breakdown[name] = len(found)
             logger.info("策略 %s：抓 %d 个（新增 %d）", name, len(found), new)
 
+        # 第四路：官方 Trending 页（best-effort，失败不影响主流程）
+        try:
+            from app.collector.trending import fetch_trending_names
+            t_names = fetch_trending_names()
+            existing = {r["full_name"] for r in merged.values()}
+            missing = [n for n in t_names if n not in existing]
+            t_found = client.fetch_repos_by_names(missing) if missing else []
+            for r in t_found:
+                merged[r["github_id"]] = r
+            breakdown["trending"] = len(t_names)
+            logger.info("策略 trending：页面 %d 个（补抓详情 %d）", len(t_names), len(t_found))
+        except Exception as e:
+            logger.warning("Trending 抓取失败（跳过）：%s", e)
+            breakdown["trending"] = 0
+
         repos = list(merged.values())
         quota = client.quota_remaining
     except Exception as e:

@@ -215,6 +215,67 @@ class GitHubClient:
                     len(results), self.quota_remaining)
         return list(results.values())[:max_total]
 
+    # 单仓库字段片段（与 SEARCH_QUERY nodes 保持一致）
+    REPO_FIELDS = """
+        databaseId
+        nameWithOwner
+        owner { login }
+        name
+        description
+        homepageUrl
+        primaryLanguage { name }
+        repositoryTopics(first: 15) { nodes { topic { name } } }
+        licenseInfo { spdxId }
+        stargazerCount
+        forkCount
+        watchers { totalCount }
+        issues(states: OPEN) { totalCount }
+        isArchived
+        createdAt
+        pushedAt
+        releases(first: 1, orderBy: {field: CREATED_AT, direction: DESC}) {
+          nodes { publishedAt }
+        }
+    """
+
+    def fetch_repos_by_names(self, full_names: list[str], batch: int = 25) -> list[dict]:
+        """按 owner/name 批量取仓库详情（GraphQL 别名，每批一次请求）。
+
+        Trending 抓取等场景用：已知名单 → 取全字段。不存在/无权限的仓库静默跳过。
+        """
+        results: list[dict] = []
+        for i in range(0, len(full_names), batch):
+            chunk = full_names[i:i + batch]
+            parts = []
+            for j, fn in enumerate(chunk):
+                try:
+                    owner, name = fn.split("/", 1)
+                except ValueError:
+                    continue
+                # GraphQL 字符串转义（仓库名不会含引号，防御性处理）
+                owner = owner.replace('"', '')
+                name = name.replace('"', '')
+                parts.append(
+                    f'r{j}: repository(owner: "{owner}", name: "{name}") '
+                    f'{{ {self.REPO_FIELDS} }}'
+                )
+            if not parts:
+                continue
+            query = "query { rateLimit { remaining resetAt } " + " ".join(parts) + " }"
+            try:
+                data = self._post(query, {})
+            except RuntimeError as e:
+                # 个别仓库 NOT_FOUND 时 GraphQL 报 errors 但 data 仍可用；
+                # _post 已抛错则整批跳过（best-effort）
+                logger.warning("批量取仓库失败（跳过本批）: %s", str(e)[:200])
+                continue
+            self._track_quota(data.get("rateLimit"))
+            for key, node in data.items():
+                if key == "rateLimit" or not node:
+                    continue
+                results.append(self._normalize(node))
+        return results
+
     @staticmethod
     def _normalize(node: dict) -> dict:
         topics = [
