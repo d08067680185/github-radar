@@ -72,5 +72,14 @@ export const api = {
     get<SnapshotPoint[]>(`/api/projects/${owner}/${name}/history?days=${days}`),
   similar: (owner: string, name: string, limit = 6) =>
     get<Project[]>(`/api/projects/${owner}/${name}/similar?limit=${limit}`),
+  extras: (owner: string, name: string) =>
+    get<{
+      readme_excerpt: string | null;
+      latest_release: {
+        tag: string | null; name: string | null;
+        published_at: string | null; url: string | null;
+        notes_excerpt: string | null;
+      } | null;
+    }>(`/api/projects/${owner}/${name}/extras`, 86400),
   searchPaged: (p: SearchParams) => getPaged(`/api/search${qs(p)}`, 60),
 };

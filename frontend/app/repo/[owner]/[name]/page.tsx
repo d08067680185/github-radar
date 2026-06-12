@@ -60,6 +60,9 @@ export default async function RepoPage({
   if (!data) notFound();
   const { project, history } = data;
   const similar = await api.similar(owner, name, 6).catch(() => []);
+  const extras = await api
+    .extras(owner, name)
+    .catch(() => ({ readme_excerpt: null, latest_release: null }));
   const t = await getDict();
   const locale = await getLocale();
 
@@ -151,6 +154,48 @@ export default async function RepoPage({
       <h2 style={{ fontSize: 18, marginTop: 28 }}>{t.trend_h}</h2>
       <GrowthBadges history={history} />
       <StarTrend points={history} />
+
+      {extras.latest_release?.tag && (
+        <section style={{ marginTop: 28 }}>
+          <h2 style={{ fontSize: 18 }}>{t.release_h}</h2>
+          <div style={{
+            padding: "12px 16px", borderRadius: 8,
+            background: "var(--card-bg, rgba(128,128,128,.06))",
+            border: "1px solid var(--border, rgba(128,128,128,.15))",
+          }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "baseline", flexWrap: "wrap" }}>
+              <b>{extras.latest_release.name || extras.latest_release.tag}</b>
+              {extras.latest_release.published_at && (
+                <span style={{ fontSize: 13, color: "var(--faint)" }}>
+                  {extras.latest_release.published_at.slice(0, 10)}
+                </span>
+              )}
+              {extras.latest_release.url && (
+                <a href={extras.latest_release.url} target="_blank" rel="noopener" style={{ fontSize: 13 }}>
+                  Release Notes →
+                </a>
+              )}
+            </div>
+            {extras.latest_release.notes_excerpt && (
+              <p style={{ fontSize: 14, color: "var(--muted)", margin: "8px 0 0" }}>
+                {extras.latest_release.notes_excerpt}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
+      {extras.readme_excerpt && (
+        <section style={{ marginTop: 28 }}>
+          <h2 style={{ fontSize: 18 }}>{t.readme_h}</h2>
+          <p style={{ fontSize: 14, lineHeight: 1.8, color: "var(--muted)" }}>
+            {extras.readme_excerpt}…{" "}
+            <a href={`https://github.com/${project.full_name}#readme`} target="_blank" rel="noopener">
+              {t.readme_more}
+            </a>
+          </p>
+        </section>
+      )}
 
       <p style={{ marginTop: 24 }}>
         <a href={`https://github.com/${project.full_name}`} target="_blank" rel="noopener">

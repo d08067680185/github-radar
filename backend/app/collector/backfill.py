@@ -137,13 +137,17 @@ def backfill(db: Session, top_n: int = 100, max_stars: int = 40000) -> int:
                     "project_id": p.id,
                     "snapshot_date": at.date(),
                     "stars": v,
+                    # 历史 fork/issue 无法重建，置 0（趋势图只用 stars）
+                    "forks": 0,
+                    "open_issues": 0,
                 })
             if rows:
                 stmt = pg_insert(ProjectSnapshot).values(rows).on_conflict_do_nothing(
                     constraint="uq_snapshot_project_date"
                 )
                 res = db.execute(stmt)
-                written += res.rowcount or 0
+                # executemany 下 rowcount 可能为 -1，按提交行数计
+                written += res.rowcount if (res.rowcount or 0) > 0 else len(rows)
                 db.commit()
             if (idx + 1) % 10 == 0:
                 logger.info("回填进度 %d/%d（已写 %d 条）", idx + 1, len(projects), written)

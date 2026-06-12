@@ -35,6 +35,7 @@ export const dict = {
     resultsFound: (n: number) => `找到 ${n.toLocaleString()} 个结果`,
     // 详情
     similar_h: "🔗 相似项目", trend_h: "Star 趋势", viewOnGh: "在 GitHub 上查看 →",
+    release_h: "🚀 最新版本", readme_h: "📖 README 摘录", readme_more: "阅读完整 README →",
     overallScore: "综合评分", createdAt: "创建于", lastPush: "最近 push", lastRelease: "最近 release",
     share: "↗ 分享", shared: "✓ 已复制链接", fav: "☆ 收藏", faved: "★ 已收藏",
     cmp: "⇄ 对比", cmped: "✓ 对比中", loginToFav: "登录后收藏",
@@ -75,6 +76,7 @@ export const dict = {
     search_empty: "Enter a keyword or pick filters to start. Try these:",
     resultsFound: (n: number) => `${n.toLocaleString()} results`,
     similar_h: "🔗 Similar Projects", trend_h: "Star Trend", viewOnGh: "View on GitHub →",
+    release_h: "🚀 Latest Release", readme_h: "📖 README Excerpt", readme_more: "Read full README →",
     overallScore: "Overall score", createdAt: "Created", lastPush: "Last push", lastRelease: "Last release",
     share: "↗ Share", shared: "✓ Link copied", fav: "☆ Save", faved: "★ Saved",
     cmp: "⇄ Compare", cmped: "✓ Comparing", loginToFav: "Log in to save",

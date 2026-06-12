@@ -26,6 +26,74 @@ def project_detail(owner: str, name: str, db: Session = Depends(get_db)):
     return out
 
 
+@router.get("/projects/{owner}/{name}/extras")
+def project_extras(owner: str, name: str, db: Session = Depends(get_db)):
+    """详情页增强内容：README 摘录 + 最新 release。
+
+    按需到 GitHub 取（README 走 raw 无需配额），Redis 缓存 24h，
+    best-effort：任一部分失败返回空字段，不报错。
+    """
+    p = db.execute(
+        select(Project.id).where(Project.full_name == f"{owner}/{name}")
+    ).scalar_one_or_none()
+    if p is None:
+        raise HTTPException(404, "project not found")
+
+    def loader():
+        import httpx
+        from app.config import settings
+
+        readme_excerpt = None
+        release = None
+        with httpx.Client(timeout=15.0, follow_redirects=True) as client:
+            # README：raw 直取（无配额），markdown 清洗成纯文本摘录
+            try:
+                r = client.get(
+                    f"https://raw.githubusercontent.com/{owner}/{name}/HEAD/README.md"
+                )
+                if r.status_code == 200 and r.text:
+                    readme_excerpt = _clean_markdown(r.text)[:1200] or None
+            except Exception:
+                pass
+            # 最新 release（REST，1 次配额）
+            try:
+                tokens = settings.token_list
+                headers = {"Authorization": f"Bearer {tokens[0]}"} if tokens else {}
+                r = client.get(
+                    f"https://api.github.com/repos/{owner}/{name}/releases/latest",
+                    headers=headers,
+                )
+                if r.status_code == 200:
+                    d = r.json()
+                    body = (d.get("body") or "").strip()
+                    release = {
+                        "tag": d.get("tag_name"),
+                        "name": d.get("name") or d.get("tag_name"),
+                        "published_at": d.get("published_at"),
+                        "url": d.get("html_url"),
+                        "notes_excerpt": _clean_markdown(body)[:600] or None,
+                    }
+            except Exception:
+                pass
+        return {"readme_excerpt": readme_excerpt, "latest_release": release}
+
+    return cached("extras", {"o": owner, "n": name}, loader, ttl=86400)
+
+
+def _clean_markdown(md: str) -> str:
+    """markdown → 可读纯文本摘录：去 badge/图片/HTML/链接标记/代码块/标题井号。"""
+    import re
+    text = re.sub(r"```.*?```", " ", md, flags=re.S)          # 代码块
+    text = re.sub(r"<!--.*?-->", " ", text, flags=re.S)        # 注释
+    text = re.sub(r"<[^>]+>", " ", text)                       # HTML 标签
+    text = re.sub(r"!\[[^\]]*\]\([^)]*\)", " ", text)          # 图片/badge
+    text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)       # 链接 → 锚文本
+    text = re.sub(r"^#{1,6}\s*", "", text, flags=re.M)         # 标题井号
+    text = re.sub(r"[*_`>|]+", " ", text)                      # 其余标记
+    text = re.sub(r"\s+", " ", text)                           # 压空白
+    return text.strip()
+
+
 @router.get("/projects/{owner}/{name}/similar", response_model=list[ProjectOut])
 def similar_projects(
     owner: str, name: str,
