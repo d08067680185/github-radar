@@ -13,6 +13,8 @@ const nextConfig = {
     return [
       { source: "/feed/:path*", destination: `${api}/feed/:path*` },
       { source: "/proxy-api/:path*", destination: `${api}/api/:path*` },
+      { source: "/proxy-admin/:path*", destination: `${api}/admin/:path*` },
+      { source: "/proxy-status", destination: `${api}/status` },
     ];
   },
 };
