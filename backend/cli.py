@@ -60,6 +60,21 @@ def cmd_summarize():
         db.close()
 
 
+def cmd_backfill():
+    """回填历史 star（top 项目，周度点位，幂等）。跑完自动重算评分。"""
+    from app.collector.backfill import backfill
+    from app.scorer.compute import compute_all
+    from app.cache import invalidate_all
+    db = SessionLocal()
+    try:
+        n = backfill(db)
+        compute_all(db)
+        invalidate_all()
+        print(f"✅ backfill 完成：写入 {n} 条历史快照（已重算评分+失效缓存）")
+    finally:
+        db.close()
+
+
 def cmd_prune():
     from app.collector.discover import prune_stale
     db = SessionLocal()
@@ -118,6 +133,7 @@ def cmd_seed():
 COMMANDS = {
     "initdb": cmd_initdb, "discover": cmd_discover, "snapshot": cmd_snapshot,
     "score": cmd_score, "prune": cmd_prune, "summarize": cmd_summarize,
+    "backfill": cmd_backfill,
     "pipeline": cmd_pipeline, "seed": cmd_seed,
 }
 
