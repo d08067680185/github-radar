@@ -9,6 +9,7 @@ export default function Nav() {
   const links = [
     { href: "/", label: t.nav_top },
     { href: "/trending", label: t.nav_trending },
+    { href: "/rising", label: t.nav_rising },
     { href: "/categories", label: t.nav_categories },
     { href: "/languages", label: t.nav_languages },
     { href: "/map", label: t.nav_map },

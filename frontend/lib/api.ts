@@ -59,6 +59,8 @@ export const api = {
   trending: (p: RankParams = {}) => get<Project[]>(`/api/rankings/trending${qs(p)}`),
   topPaged: (p: RankParams = {}) => getPaged(`/api/rankings/top${qs(p)}`),
   trendingPaged: (p: RankParams = {}) => getPaged(`/api/rankings/trending${qs(p)}`),
+  risingPaged: (p: RankParams & { days?: number } = {}) =>
+    getPaged(`/api/rankings/rising${qs(p)}`),
   languages: () => get<string[]>("/api/languages"),
   languageStats: () => get<Category[]>("/api/languages/stats"),
   categories: () => get<Category[]>("/api/categories"),

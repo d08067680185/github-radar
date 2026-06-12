@@ -6,7 +6,7 @@ export const LOCALE_COOKIE = "ghradar_locale";
 export const dict = {
   zh: {
     // 导航
-    nav_top: "综合榜", nav_trending: "Trending", nav_categories: "分类",
+    nav_top: "综合榜", nav_trending: "Trending", nav_rising: "新星", nav_categories: "分类",
     nav_languages: "语言", nav_search: "搜索", nav_map: "星图", nav_account: "我的", nav_about: "关于",
     // 星图地图
     map_h: "🌌 开源星图", map_sub: "头部项目的星系全景 —— 气泡=项目，大小=Star，颜色=领域，按领域聚成星团。悬停看详情、点击进入、可拖拽。",
@@ -23,6 +23,7 @@ export const dict = {
     // 首页/榜单
     home_h: "🏆 综合优质榜", home_sub: "按综合评分排序 —— 长期靠谱、值得关注。",
     trending_h: "🔥 Trending 榜", trending_sub: "按近期 star 增长趋势排序 —— 抓住正在崛起的项目。",
+    rising_h: "🌟 本季新星", rising_sub: "近 90 天创建、增长最快的新项目 —— 第一时间发现明日之星。",
     cats_h: "🗂️ 按领域浏览", cats_sub: "每个领域的优秀开源项目预览，点「查看全部」进入完整榜单。",
     langs_h: "💻 按语言浏览",
     // 搜索
@@ -51,7 +52,7 @@ export const dict = {
     loading: "加载中…",
   },
   en: {
-    nav_top: "Top", nav_trending: "Trending", nav_categories: "Categories",
+    nav_top: "Top", nav_trending: "Trending", nav_rising: "Rising", nav_categories: "Categories",
     nav_languages: "Languages", nav_search: "Search", nav_map: "Galaxy", nav_account: "Account", nav_about: "About",
     map_h: "🌌 Open Source Galaxy", map_sub: "A galaxy of top projects — bubble = project, size = stars, color = domain, clustered by domain. Hover for details, click to open, drag to move.",
     map_hint: "Hover for details · click to open · drag to move · click legend to highlight", map_loading: "Arranging the galaxy…",
@@ -64,6 +65,7 @@ export const dict = {
     stat_projects: "Projects", stat_languages: "Languages", stat_categories: "Categories", stat_maxstars: "Top stars",
     home_h: "🏆 Top Projects", home_sub: "Ranked by composite score — consistently solid, worth following.",
     trending_h: "🔥 Trending", trending_sub: "Ranked by recent star growth — catch the rising stars.",
+    rising_h: "🌟 Rising Stars", rising_sub: "Fastest-growing projects created in the last 90 days — spot tomorrow's stars first.",
     cats_h: "🗂️ Browse by Category", cats_sub: "A preview of top projects per domain. Click “View all” for the full board.",
     langs_h: "💻 Browse by Language",
     search_h: "Search Projects", search_sub: "Filter by keyword and multiple criteria to find what you need.",

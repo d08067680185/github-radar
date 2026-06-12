@@ -78,6 +78,39 @@ def trending_ranking(
     return cached("trending", {"lang": language, "cat": category, "limit": limit, "off": offset}, loader)
 
 
+@router.get("/rankings/rising", response_model=list[ProjectOut])
+def rising_stars(
+    response: Response,
+    db: Session = Depends(get_db),
+    days: int = Query(90, ge=7, le=365),
+    limit: int = Query(50, le=200),
+    offset: int = Query(0, ge=0),
+):
+    """本周新星：近 days 天创建的新项目，按 growth+score 排序（专题页用）。"""
+    from datetime import datetime, timedelta, timezone
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+
+    def loader():
+        stmt = (
+            select(Project)
+            .where(Project.is_archived.is_(False), Project.created_at >= cutoff)
+            .order_by(desc(Project.growth_score), desc(Project.score))
+            .offset(offset).limit(limit)
+        )
+        return _serialize(db.execute(stmt).scalars().all())
+
+    def count_loader():
+        return db.execute(
+            select(func.count()).select_from(Project)
+            .where(Project.is_archived.is_(False), Project.created_at >= cutoff)
+        ).scalar_one()
+
+    response.headers["X-Total-Count"] = str(
+        cached("rising_count", {"days": days}, count_loader)
+    )
+    return cached("rising", {"days": days, "limit": limit, "off": offset}, loader)
+
+
 @router.get("/languages", response_model=list[str])
 def languages(db: Session = Depends(get_db)):
     """已收录的语言列表（用于前端筛选）。"""
