@@ -13,6 +13,7 @@ export default function Nav() {
     { href: "/categories", label: t.nav_categories },
     { href: "/languages", label: t.nav_languages },
     { href: "/map", label: t.nav_map },
+    { href: "/picks", label: t.nav_picks },
     { href: "/search", label: t.nav_search },
     { href: "/account", label: t.nav_account },
   ];
