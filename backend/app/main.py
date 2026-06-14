@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import init_db, SessionLocal
-from app.api import rankings, projects, search, feed, auth_api, favorites, recommend, admin
+from app.api import rankings, projects, search, feed, auth_api, favorites, recommend, admin, org, subscribe
 from app.auth import require_admin
 from app.collector.discover import discover
 from app.collector.snapshot import take_snapshots
@@ -61,6 +61,8 @@ app.add_middleware(
 )
 app.include_router(rankings.router)
 app.include_router(projects.router)
+app.include_router(org.router)
+app.include_router(subscribe.router)
 app.include_router(search.router)
 app.include_router(feed.router)
 app.include_router(auth_api.router)

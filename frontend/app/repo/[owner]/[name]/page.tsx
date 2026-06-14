@@ -95,6 +95,9 @@ export default async function RepoPage({
           <FavoriteButton fullName={project.full_name} />
         </div>
       </div>
+      <a href={`/org/${project.owner}`} style={{ fontSize: 13, color: "var(--muted)", display: "inline-block", margin: "0 0 8px" }}>
+        {t.org_by_link(project.owner)}
+      </a>
       {aiSummary(project, locale) && (
         <p style={{ fontSize: 15, color: "var(--text)", margin: "0 0 8px" }}>✨ {aiSummary(project, locale)}</p>
       )}
@@ -154,6 +157,31 @@ export default async function RepoPage({
       <h2 style={{ fontSize: 18, marginTop: 28 }}>{t.trend_h}</h2>
       <GrowthBadges history={history} />
       <StarTrend points={history} />
+
+      {(() => {
+        const events = [
+          { label: t.tl_created, iso: project.created_at, icon: "🎉" },
+          { label: t.tl_release, iso: project.last_release_at, icon: "🚀" },
+          { label: t.tl_push, iso: project.pushed_at, icon: "💻" },
+        ]
+          .filter((e) => e.iso)
+          .sort((a, b) => +new Date(a.iso!) - +new Date(b.iso!));
+        if (events.length === 0) return null;
+        return (
+          <>
+            <h2 style={{ fontSize: 18, marginTop: 28 }}>{t.timeline_h}</h2>
+            <div style={{ borderLeft: "2px solid var(--border)", marginLeft: 10, paddingLeft: 18, marginTop: 10 }}>
+              {events.map((e) => (
+                <div key={e.label} style={{ position: "relative", padding: "6px 0" }}>
+                  <span style={{ position: "absolute", left: -27, fontSize: 14 }}>{e.icon}</span>
+                  <span style={{ color: "var(--muted)", fontSize: 13 }}>{dateFmt(e.iso)}</span>
+                  <span style={{ color: "var(--text)", fontSize: 14, marginLeft: 10 }}>{e.label}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        );
+      })()}
 
       {extras.latest_release?.tag && (
         <section style={{ marginTop: 28 }}>

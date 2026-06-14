@@ -1,4 +1,4 @@
-import type { Project, ProjectDetail, SnapshotPoint, Category, Stats, MapNode } from "./types";
+import type { Project, ProjectDetail, SnapshotPoint, Category, Stats, MapNode, Org, Mover } from "./types";
 
 const API_BASE = process.env.API_BASE || "http://127.0.0.1:8077";
 
@@ -82,4 +82,7 @@ export const api = {
       } | null;
     }>(`/api/projects/${owner}/${name}/extras`, 86400),
   searchPaged: (p: SearchParams) => getPaged(`/api/search${qs(p)}`, 60),
+  org: (owner: string) => get<Org>(`/api/org/${encodeURIComponent(owner)}`),
+  movers: (days = 7, limit = 6) =>
+    get<Mover[]>(`/api/rankings/movers?days=${days}&limit=${limit}`),
 };

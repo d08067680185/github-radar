@@ -85,6 +85,31 @@ def cmd_prune():
         db.close()
 
 
+def cmd_digest():
+    """给所有活跃订阅者发本周精选周报（SMTP 未配置则跳过）。"""
+    from app.mailer import send_weekly_digest
+    db = SessionLocal()
+    try:
+        n = send_weekly_digest(db)
+        print(f"✅ digest 完成：发送 {n} 封周报" if n else "ℹ️ 未发送（无订阅者或 SMTP 未配置）")
+    finally:
+        db.close()
+
+
+def cmd_digest_preview():
+    """把本周周报渲染成 HTML 写到 digest_preview.html，浏览器打开即可预览。"""
+    from app.digest import build_weekly_digest, render_weekly_html
+    db = SessionLocal()
+    try:
+        items = build_weekly_digest(db, limit=10)
+        html = render_weekly_html(items, "#preview", "zh")
+        with open("digest_preview.html", "w", encoding="utf-8") as f:
+            f.write(html)
+        print(f"✅ 已渲染 {len(items)} 个项目 → digest_preview.html（浏览器打开预览）")
+    finally:
+        db.close()
+
+
 def cmd_pipeline():
     cmd_discover()
     cmd_snapshot()
@@ -134,6 +159,7 @@ COMMANDS = {
     "initdb": cmd_initdb, "discover": cmd_discover, "snapshot": cmd_snapshot,
     "score": cmd_score, "prune": cmd_prune, "summarize": cmd_summarize,
     "backfill": cmd_backfill,
+    "digest": cmd_digest, "digest-preview": cmd_digest_preview,
     "pipeline": cmd_pipeline, "seed": cmd_seed,
 }
 

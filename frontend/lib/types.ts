@@ -49,6 +49,31 @@ export interface Stats {
   updated_at: string | null;
 }
 
+export interface Mover extends Project {
+  star_gain: number;
+  gain_pct: number;
+  window_days: number;
+}
+
+export interface Favorite {
+  project: Project;
+  tags: string[];
+  note: string | null;
+  created_at: string;
+}
+
+export interface Org {
+  owner: string;
+  project_count: number;
+  total_stars: number;
+  avg_score: number;
+  top_category: string | null;
+  top_category_name: string | null;
+  categories: Category[];
+  languages: Category[];
+  projects: Project[];
+}
+
 export interface MapNode {
   full_name: string;
   stars: number;

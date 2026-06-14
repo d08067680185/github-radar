@@ -38,10 +38,53 @@ def test_favorite_add_list_remove(client, make_project):
     assert add.status_code == 201
     assert client.get("/api/favorites/ids", headers=h).json() == ["acme/widget"]
     lst = client.get("/api/favorites", headers=h).json()
-    assert [p["full_name"] for p in lst] == ["acme/widget"]
+    assert [f["project"]["full_name"] for f in lst] == ["acme/widget"]
 
     client.delete("/api/favorites/acme/widget", headers=h)
     assert client.get("/api/favorites/ids", headers=h).json() == []
+
+
+def test_favorite_tags_note_patch_and_filter(client, make_project):
+    make_project(full_name="acme/a")
+    make_project(full_name="acme/b")
+    token = _register(client)
+    h = {"Authorization": f"Bearer {token}"}
+
+    # 带标签/备注收藏；脏标签被清洗（去空格/去空/去重）
+    client.post("/api/favorites", json={
+        "full_name": "acme/a", "tags": [" 工具 ", "工具", ""], "note": "好用"}, headers=h)
+    client.post("/api/favorites", json={"full_name": "acme/b", "tags": ["库"]}, headers=h)
+
+    a = next(f for f in client.get("/api/favorites", headers=h).json()
+             if f["project"]["full_name"] == "acme/a")
+    assert a["tags"] == ["工具"] and a["note"] == "好用"
+
+    # 标签列表去重排序
+    assert client.get("/api/favorites/tags", headers=h).json() == ["工具", "库"]
+
+    # 按标签筛选
+    only = client.get("/api/favorites?tag=库", headers=h).json()
+    assert [f["project"]["full_name"] for f in only] == ["acme/b"]
+
+    # PATCH 替换标签 + 改备注
+    p = client.patch("/api/favorites/acme/a", json={"tags": ["神器"], "note": "更新"}, headers=h)
+    assert p.status_code == 200 and p.json()["tags"] == ["神器"]
+    # 未收藏的项目 PATCH → 404
+    assert client.patch("/api/favorites/acme/b/x", json={"note": "x"}, headers=h).status_code in (404, 405)
+
+
+def test_favorite_export(client, make_project):
+    make_project(full_name="acme/a", stars=1234, description="desc a")
+    token = _register(client)
+    h = {"Authorization": f"Bearer {token}"}
+    client.post("/api/favorites", json={"full_name": "acme/a", "tags": ["工具"], "note": "n"}, headers=h)
+
+    j = client.get("/api/favorites/export?fmt=json", headers=h)
+    assert j.status_code == 200 and "attachment" in j.headers["content-disposition"]
+    assert j.json()[0]["full_name"] == "acme/a" and j.json()[0]["tags"] == ["工具"]
+
+    md = client.get("/api/favorites/export?fmt=markdown", headers=h)
+    assert md.status_code == 200 and "## 工具" in md.text and "acme/a" in md.text
 
 
 def test_recommend_prefers_favorited_language(client, make_project):

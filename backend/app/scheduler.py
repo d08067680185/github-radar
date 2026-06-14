@@ -51,10 +51,26 @@ def daily_pipeline():
         db.close()
 
 
+def weekly_digest():
+    """每周给订阅者发精选周报。SMTP 未配置时内部优雅跳过。"""
+    from app.mailer import send_weekly_digest
+    db = SessionLocal()
+    try:
+        sent = send_weekly_digest(db)
+        logger.info("每周周报任务完成，发送 %d 封", sent)
+    except Exception as e:  # noqa: BLE001
+        logger.exception("每周周报任务出错")
+        _alert(e)
+    finally:
+        db.close()
+
+
 def start_scheduler() -> BackgroundScheduler:
     scheduler = BackgroundScheduler(timezone="UTC")
     # 每天 UTC 02:00 跑（避开 GitHub 高峰）
     scheduler.add_job(daily_pipeline, "cron", hour=2, minute=0, id="daily_pipeline")
+    # 每周一 UTC 03:00 发周报（流水线之后，数据已最新）
+    scheduler.add_job(weekly_digest, "cron", day_of_week="mon", hour=3, minute=0, id="weekly_digest")
     scheduler.start()
-    logger.info("调度器已启动：每日 UTC 02:00 运行流水线")
+    logger.info("调度器已启动：每日 UTC 02:00 流水线 + 每周一 03:00 周报")
     return scheduler

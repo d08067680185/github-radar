@@ -95,6 +95,19 @@ class CollectLog(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class Subscriber(Base):
+    """周报邮件订阅者。token 用于一键退订（无需登录）。"""
+    __tablename__ = "subscribers"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    token: Mapped[str] = mapped_column(String(64), unique=True, index=True)  # 退订令牌
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    locale: Mapped[str] = mapped_column(String(8), default="zh", server_default="zh")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
 class User(Base):
     """用户。"""
     __tablename__ = "users"
@@ -123,6 +136,8 @@ class Favorite(Base):
     project_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("projects.id", ondelete="CASCADE")
     )
+    tags: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list, server_default="{}")  # 用户自定义分组标签
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)                              # 私人备注
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     user: Mapped["User"] = relationship(back_populates="favorites")

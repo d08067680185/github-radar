@@ -47,6 +47,26 @@ class CategoryOut(BaseModel):
     count: int = 0
 
 
+class MoverOut(ProjectOut):
+    """近期 star 涨得最快的项目（首页「上升最快」用）= 项目 + star 增量。"""
+    star_gain: int
+    gain_pct: float
+    window_days: int
+
+
+class OrgOut(BaseModel):
+    """组织/作者维度聚合（/org/{owner} 页用）。"""
+    owner: str
+    project_count: int
+    total_stars: int
+    avg_score: float
+    top_category: str | None = None          # 出现最多的领域 slug
+    top_category_name: str | None = None
+    categories: list[CategoryOut] = []        # 领域分布（slug=name 形式，count=项目数）
+    languages: list[CategoryOut] = []         # 语言分布
+    projects: list[ProjectOut] = []           # 该 owner 的项目，按 score 降序
+
+
 class MapNodeOut(BaseModel):
     """气泡星系地图的精简节点（payload 比 ProjectOut 小很多）。"""
     model_config = ConfigDict(from_attributes=True)
@@ -79,5 +99,32 @@ class TokenOut(BaseModel):
     email: str
 
 
+class SubscribeIn(BaseModel):
+    email: EmailStr
+    locale: str = "zh"
+
+
+class UnsubscribeIn(BaseModel):
+    token: str
+
+
 class FavoriteIn(BaseModel):
     full_name: str  # owner/repo
+    tags: list[str] = []
+    note: str | None = None
+
+
+class FavoritePatch(BaseModel):
+    """更新收藏的标签/备注（任一为 None 表示不改）。"""
+    tags: list[str] | None = None
+    note: str | None = None
+
+
+class FavoriteOut(BaseModel):
+    """收藏项 = 项目快照 + 用户私有的标签/备注/收藏时间。"""
+    model_config = ConfigDict(from_attributes=True)
+
+    project: ProjectOut
+    tags: list[str] = []
+    note: str | None = None
+    created_at: datetime

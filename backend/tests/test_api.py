@@ -80,6 +80,65 @@ def test_map_respects_limit(client, make_project):
     assert len(client.get("/api/map?limit=3").json()) == 3
 
 
+def test_movers_by_star_gain(client, make_project, db):
+    from datetime import date, timedelta
+    from app.models import ProjectSnapshot
+    big = make_project(full_name="a/big", stars=12000)
+    small = make_project(full_name="a/small", stars=1100)
+    make_project(full_name="a/flat", stars=5000)   # 无快照 → 不出现
+    today = date.today()
+    # big: 10000→12000 (+2000), small: 1000→1100 (+100)
+    db.add_all([
+        ProjectSnapshot(project_id=big.id, snapshot_date=today - timedelta(days=6),
+                        stars=10000, forks=0, open_issues=0),
+        ProjectSnapshot(project_id=big.id, snapshot_date=today, stars=12000, forks=0, open_issues=0),
+        ProjectSnapshot(project_id=small.id, snapshot_date=today - timedelta(days=6),
+                        stars=1000, forks=0, open_issues=0),
+        ProjectSnapshot(project_id=small.id, snapshot_date=today, stars=1100, forks=0, open_issues=0),
+    ])
+    db.commit()
+    out = client.get("/api/rankings/movers?days=7&limit=10").json()
+    assert [p["full_name"] for p in out] == ["a/big", "a/small"]   # 按绝对增量降序
+    assert out[0]["star_gain"] == 2000
+    assert out[1]["gain_pct"] == 10.0                              # 100/1000
+
+
+def test_movers_empty_without_two_snapshots(client, make_project, db):
+    from datetime import date
+    from app.models import ProjectSnapshot
+    p = make_project(full_name="a/one")
+    db.add(ProjectSnapshot(project_id=p.id, snapshot_date=date.today(),
+                           stars=100, forks=0, open_issues=0))
+    db.commit()
+    assert client.get("/api/rankings/movers").json() == []          # 单日快照 → 空
+
+
+def test_org_aggregation(client, make_project):
+    make_project(full_name="acme/a", owner="acme", category="ai-ml",
+                 language="Python", stars=3000, score=90)
+    make_project(full_name="acme/b", owner="acme", category="ai-ml",
+                 language="Go", stars=2000, score=70)
+    make_project(full_name="acme/dead", owner="acme", stars=999,
+                 is_archived=True)            # 归档不计
+    make_project(full_name="other/c", owner="other", stars=5000)
+    r = client.get("/api/org/acme")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["owner"] == "acme"
+    assert body["project_count"] == 2                      # 排除归档与他人
+    assert body["total_stars"] == 5000
+    assert body["avg_score"] == 80.0
+    assert body["top_category"] == "ai-ml"
+    assert [p["full_name"] for p in body["projects"]] == ["acme/a", "acme/b"]  # score 降序
+    # 语言分布两种
+    assert {c["slug"] for c in body["languages"]} == {"Python", "Go"}
+
+
+def test_org_404(client, make_project):
+    make_project(owner="someone")
+    assert client.get("/api/org/nobody").status_code == 404
+
+
 def test_stats(client, make_project):
     make_project(language="Python", category="ai-ml", stars=1000)
     make_project(language="Rust", category="devops", stars=9000)

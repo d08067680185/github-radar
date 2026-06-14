@@ -3,9 +3,11 @@ from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy import select, desc, func
 from sqlalchemy.orm import Session
 
+from sqlalchemy.orm import aliased
+
 from app.db import get_db
-from app.models import Project, CollectLog
-from app.schemas import ProjectOut, CategoryOut, MapNodeOut
+from app.models import Project, CollectLog, ProjectSnapshot
+from app.schemas import ProjectOut, CategoryOut, MapNodeOut, MoverOut
 from app.scorer.classify import all_categories
 from app.cache import cached
 
@@ -109,6 +111,55 @@ def rising_stars(
         cached("rising_count", {"days": days}, count_loader)
     )
     return cached("rising", {"days": days, "limit": limit, "off": offset}, loader)
+
+
+@router.get("/rankings/movers", response_model=list[MoverOut])
+def movers(
+    db: Session = Depends(get_db),
+    days: int = Query(7, ge=1, le=90),
+    limit: int = Query(10, le=50),
+):
+    """上升最快：窗口内 star 绝对增量最大的项目（首页模块用）。
+
+    取每个项目在 [今天-days, 今天] 窗口内最早/最晚两条快照，算 star 净增。
+    需要至少两天快照（冷启动只有单日时返回空，前端据此隐藏模块）。
+    """
+    from datetime import date, timedelta
+    cutoff = date.today() - timedelta(days=days)
+
+    def loader():
+        span = (
+            select(
+                ProjectSnapshot.project_id.label("pid"),
+                func.min(ProjectSnapshot.snapshot_date).label("d0"),
+                func.max(ProjectSnapshot.snapshot_date).label("d1"),
+            )
+            .where(ProjectSnapshot.snapshot_date >= cutoff)
+            .group_by(ProjectSnapshot.project_id)
+            .subquery()
+        )
+        s0 = aliased(ProjectSnapshot)
+        s1 = aliased(ProjectSnapshot)
+        gain = (s1.stars - s0.stars).label("gain")
+        stmt = (
+            select(Project, s0.stars.label("then"), s1.stars.label("now"))
+            .join(span, span.c.pid == Project.id)
+            .join(s0, (s0.project_id == span.c.pid) & (s0.snapshot_date == span.c.d0))
+            .join(s1, (s1.project_id == span.c.pid) & (s1.snapshot_date == span.c.d1))
+            .where(Project.is_archived.is_(False), span.c.d1 > span.c.d0, gain > 0)
+            .order_by(desc(gain))
+            .limit(limit)
+        )
+        out = []
+        for p, then, now in db.execute(stmt).all():
+            d = ProjectOut.model_validate(p).model_dump(mode="json")
+            d["star_gain"] = now - then
+            d["gain_pct"] = round((now - then) / then * 100, 2) if then else 0.0
+            d["window_days"] = days
+            out.append(d)
+        return out
+
+    return cached("movers", {"days": days, "limit": limit}, loader)
 
 
 @router.get("/languages", response_model=list[str])

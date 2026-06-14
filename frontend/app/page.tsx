@@ -2,6 +2,8 @@ import { api, PER_PAGE } from "@/lib/api";
 import { getDict } from "@/lib/i18n-server";
 import RankingList from "@/components/RankingList";
 import Hero from "@/components/Hero";
+import Movers from "@/components/Movers";
+import SubscribeBox from "@/components/SubscribeBox";
 import Pagination from "@/components/Pagination";
 
 export const revalidate = 3600;
@@ -13,19 +15,22 @@ export default async function HomePage({
 }) {
   const t = await getDict();
   const page = Math.max(1, Number((await searchParams).page) || 1);
-  const { items, total } = await api.topPaged({
-    limit: PER_PAGE,
-    offset: (page - 1) * PER_PAGE,
-  });
+  // 榜单 + 「上升最快」并行取，减少串行延迟。movers best-effort（无多日快照时为空，组件自隐藏）
+  const [{ items, total }, movers] = await Promise.all([
+    api.topPaged({ limit: PER_PAGE, offset: (page - 1) * PER_PAGE }),
+    page === 1 ? api.movers(7, 6).catch(() => []) : Promise.resolve([]),
+  ]);
   return (
     <>
       {page === 1 && <Hero />}
+      {page === 1 && <Movers movers={movers} />}
       <div className="section-head">
         <h2 className="page-title">{t.home_h}</h2>
       </div>
       <p className="page-sub">{t.home_sub}</p>
       <RankingList projects={items} metric="score" startRank={(page - 1) * PER_PAGE} />
       <Pagination total={total} page={page} basePath="/" />
+      {page === 1 && <SubscribeBox />}
     </>
   );
 }

@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useAuth, authFetch } from "@/lib/auth";
 import { useLocale } from "@/lib/i18n-client";
-import type { Project } from "@/lib/types";
+import type { Project, Favorite } from "@/lib/types";
 import RankingList from "@/components/RankingList";
+import FavoritesManager from "@/components/FavoritesManager";
 
 function AuthForm() {
   const { login, register } = useAuth();
@@ -66,9 +67,8 @@ function AuthForm() {
 function Dashboard() {
   const { email, token, logout } = useAuth();
   const { t } = useLocale();
-  const [favorites, setFavorites] = useState<Project[]>([]);
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [recommend, setRecommend] = useState<Project[]>([]);
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -78,12 +78,11 @@ function Dashboard() {
     ]).then(([f, r]) => {
       setFavorites(f);
       setRecommend(r);
-      setLoaded(true);
     });
   }, [token]);
 
   // 从收藏推断兴趣（语言 / 领域）
-  const topLang = mode(favorites.map((p) => p.language).filter(Boolean) as string[]);
+  const topLang = mode(favorites.map((f) => f.project.language).filter(Boolean) as string[]);
 
   return (
     <>
@@ -102,11 +101,7 @@ function Dashboard() {
       </div>
 
       <h2 style={{ fontSize: 18, marginTop: 30 }}>{t.myFavs}</h2>
-      {loaded && favorites.length === 0 ? (
-        <p className="page-sub">{t.search_empty}</p>
-      ) : (
-        <RankingList projects={favorites} metric="score" />
-      )}
+      {token && <FavoritesManager token={token} />}
 
       <h2 style={{ fontSize: 18, marginTop: 32 }}>{t.recForYou}</h2>
       <RankingList projects={recommend} metric="score" />
