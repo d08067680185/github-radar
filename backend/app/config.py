@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     # 是否在服务启动时开启每日自动流水线（本地调试可关，生产开）
     enable_scheduler: bool = False
 
+    # 站点对外地址（重置密码邮件里的链接等）
+    site_url: str = "http://localhost:3000"
+
     # JWT 认证
     jwt_secret: str = "change-me-in-production"
     jwt_expire_days: int = 30

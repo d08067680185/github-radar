@@ -14,6 +14,8 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  /** 直接写入已获得的 token（如密码重置成功后自动登录） */
+  applyToken: (token: string, email: string) => void;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -60,8 +62,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setEmail(null);
   }, []);
 
+  const applyToken = useCallback((t: string, e: string) => persist(t, e), []);
+
   return (
-    <AuthContext.Provider value={{ token, email, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ token, email, loading, login, register, logout, applyToken }}>
       {children}
     </AuthContext.Provider>
   );

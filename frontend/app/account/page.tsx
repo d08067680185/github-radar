@@ -53,6 +53,11 @@ function AuthForm() {
                 onClick={() => { setErr(""); setMode(mode === "login" ? "register" : "login"); }}>
           {mode === "login" ? t.toRegister : t.toLogin}
         </button>
+        {mode === "login" && (
+          <p style={{ textAlign: "center", margin: "8px 0 0" }}>
+            <a href="/account/forgot" style={{ fontSize: 13, color: "var(--muted)" }}>{t.forgotPwd}</a>
+          </p>
+        )}
       </div>
     </div>
   );
