@@ -7,7 +7,7 @@ export const dict = {
   zh: {
     // 导航
     nav_top: "综合榜", nav_trending: "Trending", nav_rising: "新星", nav_categories: "分类",
-    nav_languages: "语言", nav_search: "搜索", nav_map: "星图", nav_picks: "精选", nav_account: "我的", nav_about: "关于",
+    nav_languages: "语言", nav_search: "搜索", nav_map: "星图", nav_insights: "洞察", nav_picks: "精选", nav_account: "我的", nav_about: "关于",
     // 星图地图
     map_h: "🌌 开源星图", map_sub: "头部项目的星系全景 —— 气泡=项目，大小=Star，颜色=领域，按领域聚成星团。悬停看详情、点击进入、可拖拽。",
     map_hint: "悬停查看 · 点击进入项目 · 拖拽移动 · 点图例高亮领域", map_loading: "正在排布星系…",
@@ -54,7 +54,7 @@ export const dict = {
   },
   en: {
     nav_top: "Top", nav_trending: "Trending", nav_rising: "Rising", nav_categories: "Categories",
-    nav_languages: "Languages", nav_search: "Search", nav_map: "Galaxy", nav_picks: "Picks", nav_account: "Account", nav_about: "About",
+    nav_languages: "Languages", nav_search: "Search", nav_map: "Galaxy", nav_insights: "Insights", nav_picks: "Picks", nav_account: "Account", nav_about: "About",
     map_h: "🌌 Open Source Galaxy", map_sub: "A galaxy of top projects — bubble = project, size = stars, color = domain, clustered by domain. Hover for details, click to open, drag to move.",
     map_hint: "Hover for details · click to open · drag to move · click legend to highlight", map_loading: "Arranging the galaxy…",
     rss: "📡 RSS", viewAll: "View all →", backToList: "← Back to list",
