@@ -10,14 +10,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/trending`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE}/categories`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE}/languages`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${SITE}/digest`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
   ];
 
   try {
-    const [langs, cats, top] = await Promise.all([
+    const [langs, cats, top, digests] = await Promise.all([
       api.languages(),
       api.categories(),
       api.top({ limit: 200 }),
+      api.digestArchive().catch(() => []),
     ]);
+    const digestPages: MetadataRoute.Sitemap = digests.map((d) => ({
+      url: `${SITE}/digest/${d.week_date}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    }));
 
     const langPages: MetadataRoute.Sitemap = langs.map((l) => ({
       url: `${SITE}/lang/${encodeURIComponent(l)}`,
@@ -37,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.5,
     }));
-    return [...staticPages, ...langPages, ...catPages, ...repoPages];
+    return [...staticPages, ...langPages, ...catPages, ...repoPages, ...digestPages];
   } catch {
     return staticPages;
   }

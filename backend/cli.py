@@ -110,6 +110,19 @@ def cmd_digest_preview():
         db.close()
 
 
+def cmd_digest_archive():
+    """把本周精选存档到 digest_archives（幂等），供 /digest 历史页浏览。"""
+    from app.digest import archive_current_digest
+    from app.cache import invalidate_all
+    db = SessionLocal()
+    try:
+        rec = archive_current_digest(db)
+        invalidate_all()
+        print(f"✅ 已存档本周精选：{rec.week_date}（{rec.item_count} 项）")
+    finally:
+        db.close()
+
+
 def cmd_pipeline():
     cmd_discover()
     cmd_snapshot()
@@ -160,6 +173,7 @@ COMMANDS = {
     "score": cmd_score, "prune": cmd_prune, "summarize": cmd_summarize,
     "backfill": cmd_backfill,
     "digest": cmd_digest, "digest-preview": cmd_digest_preview,
+    "digest-archive": cmd_digest_archive,
     "pipeline": cmd_pipeline, "seed": cmd_seed,
 }
 

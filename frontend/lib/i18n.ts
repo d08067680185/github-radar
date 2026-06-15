@@ -7,7 +7,7 @@ export const dict = {
   zh: {
     // 导航
     nav_top: "综合榜", nav_trending: "Trending", nav_rising: "新星", nav_categories: "分类",
-    nav_languages: "语言", nav_search: "搜索", nav_map: "星图", nav_insights: "洞察", nav_picks: "精选", nav_account: "我的", nav_about: "关于",
+    nav_languages: "语言", nav_search: "搜索", nav_map: "星图", nav_insights: "洞察", nav_picks: "精选", nav_digest: "周报", nav_account: "我的", nav_about: "关于",
     // 星图地图
     map_h: "🌌 开源星图", map_sub: "头部项目的星系全景 —— 气泡=项目，大小=Star，颜色=领域，按领域聚成星团。悬停看详情、点击进入、可拖拽。",
     map_hint: "悬停查看 · 点击进入项目 · 拖拽移动 · 点图例高亮领域", map_loading: "正在排布星系…",
@@ -69,12 +69,16 @@ export const dict = {
     sub_h: "📬 每周精选周报", sub_sub: "每周一封，精选过去 7 天上升最快的开源项目，免费。",
     sub_ph: "你的邮箱", sub_btn: "订阅", sub_ok: "✅ 订阅成功！周报每周一发送。",
     sub_err: "订阅失败，请稍后再试", sub_preview: "预览周报样例 →",
+    // 周报存档
+    digest_h: "📰 每周精选周报", digest_sub: "每周精选过去 7 天上升最快的开源项目 —— 历史存档，随时回看。",
+    digest_empty: "还没有存档的周报，第一期即将发布。", digest_items: (n: number) => `${n} 个项目`,
+    digest_view: "查看本期 →", digest_back: "← 全部周报", digest_gain: "本周新增",
     unsub_h: "退订周报", unsub_doing: "正在退订…", unsub_ok: "✅ 已退订，不会再收到周报。",
     unsub_err: "退订失败，链接可能已失效。", unsub_invalid: "缺少退订令牌。",
   },
   en: {
     nav_top: "Top", nav_trending: "Trending", nav_rising: "Rising", nav_categories: "Categories",
-    nav_languages: "Languages", nav_search: "Search", nav_map: "Galaxy", nav_insights: "Insights", nav_picks: "Picks", nav_account: "Account", nav_about: "About",
+    nav_languages: "Languages", nav_search: "Search", nav_map: "Galaxy", nav_insights: "Insights", nav_picks: "Picks", nav_digest: "Digest", nav_account: "Account", nav_about: "About",
     map_h: "🌌 Open Source Galaxy", map_sub: "A galaxy of top projects — bubble = project, size = stars, color = domain, clustered by domain. Hover for details, click to open, drag to move.",
     map_hint: "Hover for details · click to open · drag to move · click legend to highlight", map_loading: "Arranging the galaxy…",
     rss: "📡 RSS", viewAll: "View all →", backToList: "← Back to list",
@@ -125,6 +129,9 @@ export const dict = {
     sub_h: "📬 Weekly Digest", sub_sub: "One email a week with the fastest-rising open-source projects of the past 7 days. Free.",
     sub_ph: "Your email", sub_btn: "Subscribe", sub_ok: "✅ Subscribed! Digest goes out every Monday.",
     sub_err: "Subscription failed, please try again later", sub_preview: "Preview a sample digest →",
+    digest_h: "📰 Weekly Digest", digest_sub: "A weekly pick of the fastest-rising open-source projects — archived, browse anytime.",
+    digest_empty: "No archived digests yet — the first issue is coming soon.", digest_items: (n: number) => `${n} projects`,
+    digest_view: "View issue →", digest_back: "← All digests", digest_gain: "gained this week",
     unsub_h: "Unsubscribe", unsub_doing: "Unsubscribing…", unsub_ok: "✅ Unsubscribed. You won't receive the digest anymore.",
     unsub_err: "Unsubscribe failed, the link may have expired.", unsub_invalid: "Missing unsubscribe token.",
   },

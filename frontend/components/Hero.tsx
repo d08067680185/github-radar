@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import { getDict } from "@/lib/i18n-server";
+import SearchAutocomplete from "@/components/SearchAutocomplete";
 
 function fmt(n: number): string {
   if (n >= 1000) return `${Math.floor(n / 1000)}k+`;
@@ -24,7 +25,7 @@ export default async function Hero() {
       <p>{t.hero_desc}</p>
 
       <form method="GET" action="/search" className="hero-search" role="search">
-        <input type="text" name="q" placeholder={t.hero_search_ph} aria-label={t.nav_search} />
+        <SearchAutocomplete name="q" placeholder={t.hero_search_ph} ariaLabel={t.nav_search} className="" />
         <button type="submit">{t.searchBtn}</button>
       </form>
 

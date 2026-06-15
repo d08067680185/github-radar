@@ -1,4 +1,7 @@
-import type { Project, ProjectDetail, SnapshotPoint, Category, Stats, MapNode, Org, Mover } from "./types";
+import type {
+  Project, ProjectDetail, SnapshotPoint, Category, Stats, MapNode, Org, Mover,
+  DigestArchiveListItem, DigestArchiveDetail,
+} from "./types";
 
 const API_BASE = process.env.API_BASE || "http://127.0.0.1:8077";
 
@@ -85,4 +88,7 @@ export const api = {
   org: (owner: string) => get<Org>(`/api/org/${encodeURIComponent(owner)}`),
   movers: (days = 7, limit = 6) =>
     get<Mover[]>(`/api/rankings/movers?days=${days}&limit=${limit}`),
+  digestArchive: () => get<DigestArchiveListItem[]>(`/api/digest/archive`),
+  digestArchiveDetail: (week: string) =>
+    get<DigestArchiveDetail>(`/api/digest/archive/${encodeURIComponent(week)}`),
 };

@@ -15,6 +15,7 @@ export default function Nav() {
     { href: "/map", label: t.nav_map },
     { href: "/insights", label: t.nav_insights },
     { href: "/picks", label: t.nav_picks },
+    { href: "/digest", label: t.nav_digest },
     { href: "/search", label: t.nav_search },
     { href: "/account", label: t.nav_account },
   ];

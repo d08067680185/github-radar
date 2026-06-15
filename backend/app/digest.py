@@ -53,6 +53,47 @@ def build_weekly_digest(db: Session, limit: int = 10) -> list[dict]:
     return [{"project": p, "star_gain": None} for p in fallback]
 
 
+def _serialize_items(items: list[dict]) -> list[dict]:
+    """把 build_weekly_digest 的输出转成可入库的 JSON 条目。"""
+    out = []
+    for it in items:
+        p = it["project"]
+        out.append({
+            "full_name": p.full_name,
+            "stars": p.stars,
+            "score": float(p.score),
+            "star_gain": it.get("star_gain"),
+            "language": p.language,
+            "category": p.category,
+            "summary_zh": p.readme_summary or p.description,
+            "summary_en": p.readme_summary_en or p.description,
+        })
+    return out
+
+
+def _week_monday(d: date | None = None) -> date:
+    d = d or date.today()
+    return d - timedelta(days=d.weekday())
+
+
+def archive_current_digest(db: Session, limit: int = 10):
+    """把「本周」精选存档（幂等：同一周只存一条，已存在则直接返回）。返回 DigestArchive。"""
+    from app.models import DigestArchive
+    week = _week_monday()
+    existing = db.execute(
+        select(DigestArchive).where(DigestArchive.week_date == week)
+    ).scalar_one_or_none()
+    if existing is not None:
+        return existing
+    items = _serialize_items(build_weekly_digest(db, limit=limit))
+    title = f"本周精选 · {week.isoformat()}"
+    rec = DigestArchive(week_date=week, title=title, item_count=len(items), items=items)
+    db.add(rec)
+    db.commit()
+    db.refresh(rec)
+    return rec
+
+
 def render_weekly_html(items: list[dict], unsubscribe_url: str, locale: str = "zh") -> str:
     """渲染周报 HTML（内联样式，邮件客户端友好）。"""
     zh = locale != "en"

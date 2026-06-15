@@ -51,6 +51,27 @@ def test_build_weekly_digest_prefers_movers(db, make_project):
     assert items[0]["star_gain"] == 1000
 
 
+def test_archive_idempotent_and_api(client, db, make_project):
+    from app.digest import archive_current_digest, _week_monday
+    make_project(full_name="a/star", stars=9000, score=88, growth_score=50)
+    rec1 = archive_current_digest(db)
+    assert rec1.week_date == _week_monday()
+    assert rec1.item_count >= 1
+    # 幂等：同周再存返回同一条，不新增
+    rec2 = archive_current_digest(db)
+    assert rec2.id == rec1.id
+
+    # 列表接口
+    lst = client.get("/api/digest/archive").json()
+    assert len(lst) == 1 and lst[0]["week_date"] == _week_monday().isoformat()
+    # 详情接口含条目
+    detail = client.get(f"/api/digest/archive/{_week_monday().isoformat()}").json()
+    assert detail["item_count"] == rec1.item_count
+    assert detail["items"][0]["full_name"] == "a/star"
+    # 不存在的周 → 404
+    assert client.get("/api/digest/archive/2000-01-03").status_code == 404
+
+
 def test_build_weekly_digest_falls_back_to_trending(db, make_project):
     from app.digest import build_weekly_digest
     make_project(full_name="a/low", growth_score=5, score=10)

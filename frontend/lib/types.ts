@@ -62,6 +62,27 @@ export interface Favorite {
   created_at: string;
 }
 
+export interface DigestArchiveItem {
+  full_name: string;
+  stars: number;
+  score: number;
+  star_gain: number | null;
+  language: string | null;
+  category: string | null;
+  summary_zh: string | null;
+  summary_en: string | null;
+}
+
+export interface DigestArchiveListItem {
+  week_date: string;
+  title: string;
+  item_count: number;
+}
+
+export interface DigestArchiveDetail extends DigestArchiveListItem {
+  items: DigestArchiveItem[];
+}
+
 export interface Org {
   owner: string;
   project_count: number;

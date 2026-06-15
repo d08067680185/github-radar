@@ -47,6 +47,16 @@ class CategoryOut(BaseModel):
     count: int = 0
 
 
+class SuggestOut(BaseModel):
+    """搜索自动补全的精简条目（payload 极小）。"""
+    model_config = ConfigDict(from_attributes=True)
+
+    full_name: str
+    stars: int
+    language: str | None
+    category: str | None
+
+
 class MoverOut(ProjectOut):
     """近期 star 涨得最快的项目（首页「上升最快」用）= 项目 + star 增量。"""
     star_gain: int
@@ -97,6 +107,20 @@ class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
     email: str
+
+
+class DigestArchiveListOut(BaseModel):
+    """周报存档列表项（不含 items，列表页用）。"""
+    model_config = ConfigDict(from_attributes=True)
+
+    week_date: date
+    title: str
+    item_count: int
+
+
+class DigestArchiveDetailOut(DigestArchiveListOut):
+    """周报存档详情（含结构化条目）。"""
+    items: list[dict] = []
 
 
 class SubscribeIn(BaseModel):

@@ -4,7 +4,7 @@ from sqlalchemy import (
     BigInteger, String, Text, Integer, Numeric, Boolean,
     DateTime, Date, ForeignKey, UniqueConstraint, Index, func,
 )
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -92,6 +92,19 @@ class CollectLog(Base):
     status: Mapped[str] = mapped_column(String(32))        # ok / error
     detail: Mapped[str | None] = mapped_column(Text, nullable=True)
     repos_affected: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class DigestArchive(Base):
+    """每周精选周报的历史存档（可公开浏览 + SEO）。每周一条，按 week_date 幂等。"""
+    __tablename__ = "digest_archives"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    week_date: Mapped[date] = mapped_column(Date, unique=True, index=True)  # 该周周一
+    title: Mapped[str] = mapped_column(Text)
+    item_count: Mapped[int] = mapped_column(Integer, default=0)
+    # 结构化条目：[{full_name, stars, score, star_gain, language, summary_zh, summary_en}, ...]
+    items: Mapped[list] = mapped_column(JSONB, default=list)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

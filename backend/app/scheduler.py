@@ -52,10 +52,15 @@ def daily_pipeline():
 
 
 def weekly_digest():
-    """每周给订阅者发精选周报。SMTP 未配置时内部优雅跳过。"""
+    """每周：先存档本周精选（无论 SMTP），再给订阅者发邮件（SMTP 未配置则跳过）。"""
     from app.mailer import send_weekly_digest
+    from app.digest import archive_current_digest
+    from app.cache import invalidate_all
     db = SessionLocal()
     try:
+        rec = archive_current_digest(db)
+        logger.info("本周周报已存档：%s（%d 项）", rec.week_date, rec.item_count)
+        invalidate_all()  # 让 /digest 列表立即可见
         sent = send_weekly_digest(db)
         logger.info("每周周报任务完成，发送 %d 封", sent)
     except Exception as e:  # noqa: BLE001

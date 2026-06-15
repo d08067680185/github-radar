@@ -80,6 +80,23 @@ def test_map_respects_limit(client, make_project):
     assert len(client.get("/api/map?limit=3").json()) == 3
 
 
+def test_search_suggest_prefix_first(client, make_project):
+    make_project(full_name="vercel/next.js", name="next.js", stars=9000, score=95)
+    make_project(full_name="remix-run/remix", name="remix", description="builds on next", stars=8000, score=80)
+    make_project(full_name="nextauthjs/next-auth", name="next-auth", stars=5000, score=70)
+    out = client.get("/api/search/suggest?q=next").json()
+    names = [s["full_name"] for s in out]
+    # 名称以 next 开头的排在前（next.js / next-auth），描述命中的 remix 靠后
+    assert names[0] in ("vercel/next.js", "nextauthjs/next-auth")
+    assert "remix-run/remix" in names and names.index("remix-run/remix") > 0
+    # 精简字段
+    assert set(out[0]) == {"full_name", "stars", "language", "category"}
+
+
+def test_search_suggest_empty_query_rejected(client):
+    assert client.get("/api/search/suggest?q=").status_code == 422
+
+
 def test_movers_by_star_gain(client, make_project, db):
     from datetime import date, timedelta
     from app.models import ProjectSnapshot

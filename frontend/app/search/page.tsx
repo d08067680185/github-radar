@@ -4,6 +4,7 @@ import { getDict, getLocale } from "@/lib/i18n-server";
 import { catName } from "@/lib/i18n";
 import RankingList from "@/components/RankingList";
 import Pagination from "@/components/Pagination";
+import SearchAutocomplete from "@/components/SearchAutocomplete";
 
 export const metadata: Metadata = {
   title: "搜索开源项目",
@@ -47,8 +48,7 @@ export default async function SearchPage({
       <p className="page-sub">{t.search_sub}</p>
 
       <form method="GET" className="search-form">
-        <input
-          type="text"
+        <SearchAutocomplete
           name="q"
           defaultValue={q}
           placeholder={t.search_ph}
