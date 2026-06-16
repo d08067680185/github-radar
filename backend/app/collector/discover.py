@@ -32,11 +32,13 @@ _DT_FIELDS = ("created_at", "pushed_at", "last_release_at")
 # 旗舰项目种子表：保证这些「众所周知该上榜」的巨头一定被收录，
 # 不因 star 区间分片偶发漏抓 + 30 天 prune 而消失（曾观察到 facebook/react 凭空消失）。
 # 按名直取详情（fetch_repos_by_names），与 trending 路同机制合并。
+# 注意用**当前规范名**：仓库改组织/改名后 GraphQL repository() 不跟 301 重定向，
+# 旧名会取不到。例：react 已从 facebook 组织搬到 react 组织（facebook/react→react/react）。
 FLAGSHIP_REPOS = [
-    "facebook/react", "vuejs/core", "vuejs/vue", "angular/angular", "sveltejs/svelte",
-    "torvalds/linux", "microsoft/vscode", "tensorflow/tensorflow", "pytorch/pytorch",
-    "kubernetes/kubernetes", "rust-lang/rust", "golang/go", "python/cpython",
-    "nodejs/node", "denoland/deno", "facebook/react-native", "flutter/flutter",
+    "react/react", "react/react-native", "vuejs/core", "vuejs/vue", "angular/angular",
+    "sveltejs/svelte", "torvalds/linux", "microsoft/vscode", "tensorflow/tensorflow",
+    "pytorch/pytorch", "kubernetes/kubernetes", "rust-lang/rust", "golang/go", "python/cpython",
+    "nodejs/node", "denoland/deno", "flutter/flutter",
     "django/django", "rails/rails", "laravel/laravel", "spring-projects/spring-boot",
     "vercel/next.js", "facebook/docusaurus", "redis/redis", "postgres/postgres",
     "elastic/elasticsearch", "apache/kafka", "moby/moby", "ollama/ollama",
