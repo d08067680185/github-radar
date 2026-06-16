@@ -7,7 +7,7 @@ from sqlalchemy.orm import aliased
 
 from app.db import get_db
 from app.models import Project, CollectLog, ProjectSnapshot
-from app.schemas import ProjectOut, CategoryOut, MapNodeOut, MoverOut
+from app.schemas import ProjectOut, CategoryOut, MapNodeOut, MoverOut, MapTimelineOut
 from app.scorer.classify import all_categories
 from app.cache import cached
 
@@ -231,7 +231,8 @@ def map_nodes(db: Session = Depends(get_db), limit: int = Query(400, le=800)):
         rows = db.execute(
             select(
                 Project.full_name, Project.stars, Project.score,
-                Project.growth_score, Project.category, Project.language,
+                Project.growth_score, Project.activity_score, Project.health_score,
+                Project.heat_score, Project.category, Project.language,
             )
             .where(Project.is_archived.is_(False))
             .order_by(desc(Project.score))
@@ -239,11 +240,72 @@ def map_nodes(db: Session = Depends(get_db), limit: int = Query(400, le=800)):
         ).all()
         return [
             {"full_name": r.full_name, "stars": r.stars, "score": float(r.score),
-             "growth_score": float(r.growth_score), "category": r.category,
-             "language": r.language}
+             "growth_score": float(r.growth_score), "activity_score": float(r.activity_score),
+             "health_score": float(r.health_score), "heat_score": float(r.heat_score),
+             "category": r.category, "language": r.language}
             for r in rows
         ]
     return cached("map", {"limit": limit}, loader)
+
+
+@router.get("/map/timeline", response_model=MapTimelineOut)
+def map_timeline(
+    db: Session = Depends(get_db),
+    limit: int = Query(300, le=500),
+    days: int = Query(30, ge=7, le=120),
+):
+    """星图时间轴：头部 N 个项目近 days 天的每日 star 序列。
+
+    dates = 窗口内出现过的快照日期（升序）；每节点 series 与 dates 对齐，
+    缺的日期用「上一已知值」前向填充，无任何快照则全程用当前 stars（恒定）。
+    用于前端拖时间轴看星系生长。冷启动快照不足 2 天时 dates 长度 < 2，前端隐藏时间轴。
+    """
+    from datetime import date, timedelta
+    cutoff = date.today() - timedelta(days=days)
+
+    def loader():
+        top = db.execute(
+            select(
+                Project.id, Project.full_name, Project.stars, Project.score,
+                Project.growth_score, Project.category, Project.language,
+            )
+            .where(Project.is_archived.is_(False))
+            .order_by(desc(Project.score))
+            .limit(limit)
+        ).all()
+        ids = [r.id for r in top]
+        if not ids:
+            return {"dates": [], "nodes": []}
+
+        snaps = db.execute(
+            select(ProjectSnapshot.project_id, ProjectSnapshot.snapshot_date, ProjectSnapshot.stars)
+            .where(ProjectSnapshot.project_id.in_(ids), ProjectSnapshot.snapshot_date >= cutoff)
+        ).all()
+
+        date_set = sorted({s.snapshot_date for s in snaps})
+        dates = [d.isoformat() for d in date_set]
+        # project_id -> {date: stars}
+        by_pid: dict[int, dict] = {}
+        for s in snaps:
+            by_pid.setdefault(s.project_id, {})[s.snapshot_date] = s.stars
+
+        nodes = []
+        for r in top:
+            pmap = by_pid.get(r.id, {})
+            series = []
+            last = None
+            for d in date_set:
+                if d in pmap:
+                    last = pmap[d]
+                series.append(last if last is not None else r.stars)
+            nodes.append({
+                "full_name": r.full_name, "stars": r.stars, "score": float(r.score),
+                "growth_score": float(r.growth_score), "category": r.category,
+                "language": r.language, "series": series,
+            })
+        return {"dates": dates, "nodes": nodes}
+
+    return cached("map_timeline", {"limit": limit, "days": days}, loader)
 
 
 @router.get("/stats")

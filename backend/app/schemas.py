@@ -85,8 +85,17 @@ class MapNodeOut(BaseModel):
     stars: int
     score: float
     growth_score: float
+    activity_score: float
+    health_score: float
+    heat_score: float
     category: str | None
     language: str | None
+
+
+class MapTimelineOut(BaseModel):
+    """星图时间轴：每节点近 N 天每日 star 序列（对齐 dates）。"""
+    dates: list[str]
+    nodes: list[dict]
 
 
 # ---- 认证 / 用户 ----

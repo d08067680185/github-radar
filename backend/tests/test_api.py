@@ -93,9 +93,29 @@ def test_map_nodes(client, make_project):
     out = client.get("/api/map?limit=10").json()
     names = [n["full_name"] for n in out]
     assert names == ["a/high", "a/low"]          # 按 score 降序、排除归档
-    # 精简字段齐全，且不含 description/topics 等重字段
+    # 精简字段齐全（含四维供侧栏），且不含 description/topics 等重字段
     n = out[0]
-    assert set(n) == {"full_name", "stars", "score", "growth_score", "category", "language"}
+    assert set(n) == {"full_name", "stars", "score", "growth_score", "activity_score",
+                      "health_score", "heat_score", "category", "language"}
+
+
+def test_map_timeline(client, make_project, db):
+    from datetime import date, timedelta
+    from app.models import ProjectSnapshot
+    p = make_project(full_name="a/grow", stars=5000, score=90)
+    make_project(full_name="a/nohist", stars=3000, score=80)  # 无快照 → 恒定
+    today = date.today()
+    db.add_all([
+        ProjectSnapshot(project_id=p.id, snapshot_date=today - timedelta(days=2), stars=4000, forks=0, open_issues=0),
+        ProjectSnapshot(project_id=p.id, snapshot_date=today, stars=5000, forks=0, open_issues=0),
+    ])
+    db.commit()
+    out = client.get("/api/map/timeline?days=30").json()
+    assert len(out["dates"]) == 2                     # 两个快照日
+    grow = next(n for n in out["nodes"] if n["full_name"] == "a/grow")
+    assert grow["series"] == [4000, 5000]             # 按日期对齐
+    nohist = next(n for n in out["nodes"] if n["full_name"] == "a/nohist")
+    assert nohist["series"] == [3000, 3000]           # 无快照 → 当前 stars 恒定
 
 
 def test_map_respects_limit(client, make_project):

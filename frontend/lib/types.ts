@@ -100,6 +100,24 @@ export interface MapNode {
   stars: number;
   score: number;
   growth_score: number;
+  activity_score: number;
+  health_score: number;
+  heat_score: number;
   category: string | null;
   language: string | null;
+}
+
+export interface MapTimelineNode {
+  full_name: string;
+  stars: number;
+  score: number;
+  growth_score: number;
+  category: string | null;
+  language: string | null;
+  series: number[];
+}
+
+export interface MapTimeline {
+  dates: string[];
+  nodes: MapTimelineNode[];
 }

@@ -13,6 +13,8 @@ export const dict = {
     map_hint: "滚轮缩放 · 拖拽平移 · 悬停查看 · 点击进入 · 点图例筛领域", map_loading: "正在排布星系…",
     map_search_ph: "在星图中搜索项目…", map_size_by: "大小：", map_size_stars: "Star", map_size_score: "评分", map_size_growth: "增长",
     map_reset: "复位视图", map_no_match: "未找到",
+    map_group_by: "聚团：", map_group_cat: "领域", map_group_lang: "语言", map_other: "其它",
+    map_time: "时间轴", map_now: "实时", map_detail: "进入详情 →",
     // 通用
     rss: "📡 RSS 订阅", viewAll: "查看全部 →", backToList: "← 返回榜单",
     cmdk_ph: "搜索项目，或跳转页面…", cmdk_projects: "项目", cmdk_pages: "页面", cmdk_hint: "快速搜索",
@@ -95,6 +97,8 @@ export const dict = {
     map_hint: "Scroll to zoom · drag to pan · hover for details · click to open · click legend to filter", map_loading: "Arranging the galaxy…",
     map_search_ph: "Search projects in the galaxy…", map_size_by: "Size: ", map_size_stars: "Stars", map_size_score: "Score", map_size_growth: "Growth",
     map_reset: "Reset view", map_no_match: "No match",
+    map_group_by: "Cluster: ", map_group_cat: "Domain", map_group_lang: "Language", map_other: "Other",
+    map_time: "Timeline", map_now: "Now", map_detail: "Open details →",
     rss: "📡 RSS", viewAll: "View all →", backToList: "← Back to list",
     cmdk_ph: "Search projects, or jump to a page…", cmdk_projects: "Projects", cmdk_pages: "Pages", cmdk_hint: "Quick search",
     score: "Score", growth: "Growth", activity: "Activity", health: "Health", heat: "Heat",
@@ -212,4 +216,22 @@ export const CAT_FALLBACK_COLOR = "#94a3b8"; // 未分类/未知
 
 export function catColor(slug: string | null | undefined): string {
   return (slug && CAT_COLORS[slug]) || CAT_FALLBACK_COLOR;
+}
+
+// 语言 → 颜色（星图语言模式用）。常用语言用 GitHub 风格色，其余按名字 hash 生成稳定色。
+export const LANG_COLORS: Record<string, string> = {
+  JavaScript: "#f1e05a", TypeScript: "#3178c6", Python: "#3572A5", Rust: "#dea584",
+  Go: "#00ADD8", Java: "#b07219", C: "#9aa0a6", "C++": "#f34b7d", "C#": "#178600",
+  Ruby: "#701516", PHP: "#4F5D95", Swift: "#F05138", Kotlin: "#A97BFF", Dart: "#00B4AB",
+  Shell: "#89e051", HTML: "#e34c26", CSS: "#563d7c", Vue: "#41b883", Zig: "#ec915c",
+  Lua: "#9c66ff", Scala: "#c22d40", Elixir: "#6e4a7e", Haskell: "#5e5086",
+  "Jupyter Notebook": "#DA5B0B", Clojure: "#db5855", OCaml: "#ef7a08",
+};
+
+export function langColor(lang: string | null | undefined): string {
+  if (!lang) return CAT_FALLBACK_COLOR;
+  if (LANG_COLORS[lang]) return LANG_COLORS[lang];
+  let h = 0;
+  for (let i = 0; i < lang.length; i++) h = (h * 31 + lang.charCodeAt(i)) % 360;
+  return `hsl(${h}, 60%, 58%)`;
 }

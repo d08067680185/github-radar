@@ -1,5 +1,5 @@
 import type {
-  Project, ProjectDetail, SnapshotPoint, Category, Stats, MapNode, Org, Mover,
+  Project, ProjectDetail, SnapshotPoint, Category, Stats, MapNode, MapTimeline, Org, Mover,
   DigestArchiveListItem, DigestArchiveDetail,
 } from "./types";
 
@@ -70,6 +70,8 @@ export const api = {
   categories: () => get<Category[]>("/api/categories"),
   stats: () => get<Stats>("/api/stats"),
   mapNodes: (limit = 400) => get<MapNode[]>(`/api/map?limit=${limit}`),
+  mapTimeline: (limit = 300, days = 30) =>
+    get<MapTimeline>(`/api/map/timeline?limit=${limit}&days=${days}`),
   project: (owner: string, name: string) =>
     get<ProjectDetail>(`/api/projects/${owner}/${name}`),
   history: (owner: string, name: string, days = 90) =>
