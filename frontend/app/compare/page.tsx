@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { api } from "@/lib/api";
 import type { ProjectDetail } from "@/lib/types";
+import RadarChart, { RADAR_COLORS } from "@/components/RadarChart";
 
 export const metadata: Metadata = {
   title: "项目对比",
@@ -66,6 +67,20 @@ export default async function ComparePage({
     <>
       <h1 className="page-title">{en ? "⇄ Compare Projects" : "⇄ 项目对比"}</h1>
       <p className="page-sub">{en ? "Green highlights the best in each dimension." : "绿色高亮为该维度表现最优的项目。"}</p>
+
+      <div style={{ margin: "8px 0 24px" }}>
+        <RadarChart
+          axes={[t.growth, t.activity, t.health, t.heat]}
+          series={projects.map((p, i) => ({
+            label: p.full_name,
+            color: RADAR_COLORS[i % RADAR_COLORS.length],
+            values: [
+              Number(p.growth_score), Number(p.activity_score),
+              Number(p.health_score), Number(p.heat_score),
+            ],
+          }))}
+        />
+      </div>
 
       <div className="cmp-grid" style={{ gridTemplateColumns: `160px repeat(${projects.length}, 1fr)` }}>
         {/* 头行 */}

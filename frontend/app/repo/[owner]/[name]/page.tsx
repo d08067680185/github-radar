@@ -11,6 +11,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import CompareButton from "@/components/CompareButton";
 import ShareButton from "@/components/ShareButton";
 import BadgeEmbed from "@/components/BadgeEmbed";
+import RadarChart from "@/components/RadarChart";
 
 export const revalidate = 3600;
 
@@ -145,6 +146,17 @@ export default async function RepoPage({
             </div>
           );
         })}
+      </div>
+
+      <div style={{ margin: "8px 0 4px" }}>
+        <RadarChart
+          axes={[t.growth, t.activity, t.health, t.heat]}
+          series={[{
+            label: project.full_name,
+            color: "#4f8cff",
+            values: [project.growth_score, project.activity_score, project.health_score, project.heat_score],
+          }]}
+        />
       </div>
 
       {project.topics.length > 0 && (

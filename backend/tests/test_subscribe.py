@@ -33,6 +33,17 @@ def test_digest_preview_html(client, make_project):
     assert "acme/star" in r.text and "GitHub Radar" in r.text
 
 
+def test_digest_rss_feed(client, db, make_project):
+    from app.digest import archive_current_digest
+    make_project(full_name="acme/star", stars=9000, score=88, growth_score=50)
+    archive_current_digest(db)
+    r = client.get("/feed/digest.xml")
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("application/rss+xml")
+    assert "<rss" in r.text and "每周精选周报" in r.text
+    assert "acme/star" in r.text
+
+
 def test_build_weekly_digest_prefers_movers(db, make_project):
     from app.models import ProjectSnapshot
     from app.digest import build_weekly_digest

@@ -8,7 +8,10 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "每周精选周报 — 历史存档",
   description: "GitHub Radar 每周精选过去 7 天上升最快的开源项目，历史存档随时回看。",
-  alternates: { canonical: "/digest" },
+  alternates: {
+    canonical: "/digest",
+    types: { "application/rss+xml": "/feed/digest.xml" },
+  },
 };
 
 export default async function DigestListPage() {
@@ -18,7 +21,10 @@ export default async function DigestListPage() {
   return (
     <>
       <h1 className="page-title">{t.digest_h}</h1>
-      <p className="page-sub">{t.digest_sub}</p>
+      <p className="page-sub">
+        {t.digest_sub}{" "}
+        <a href="/feed/digest.xml" style={{ fontSize: 13, whiteSpace: "nowrap" }}>{t.rss}</a>
+      </p>
 
       {issues.length === 0 ? (
         <p className="page-sub" style={{ marginTop: 24 }}>{t.digest_empty}</p>
