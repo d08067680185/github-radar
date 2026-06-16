@@ -50,6 +50,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <LocaleProvider locale={locale}>
           <AuthProvider>
             <CompareProvider>
+              <a href="#main" className="skip-link">{t.skip_to_content}</a>
               <header className="site">
                 <div className="container inner">
                   <a href="/" className="logo">🛰️ GitHub Radar</a>
@@ -59,7 +60,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <ThemeToggle />
                 </div>
               </header>
-              <main className="container">{children}</main>
+              <main id="main" className="container">{children}</main>
               <footer className="site">
                 <div className="container">
                   GitHub Radar · {t.footer}

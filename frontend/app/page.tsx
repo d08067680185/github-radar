@@ -23,8 +23,23 @@ export default async function HomePage({
     api.topPaged({ sort, limit: PER_PAGE, offset: (page - 1) * PER_PAGE }),
     page === 1 ? api.movers(7, 6).catch(() => []) : Promise.resolve([]),
   ]);
+  const SITE = process.env.SITE_URL || "https://radar.mxzshs.com";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "GitHub Radar",
+    url: SITE,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: { "@type": "EntryPoint", urlTemplate: `${SITE}/search?q={query}` },
+      "query-input": "required name=query",
+    },
+  };
   return (
     <>
+      {page === 1 && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      )}
       {page === 1 && <Hero />}
       {page === 1 && <Movers movers={movers} />}
       <div className="section-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>

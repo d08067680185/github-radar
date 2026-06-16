@@ -38,6 +38,9 @@ async def lifespan(app: FastAPI):
         logger.warning("⚠️ JWT_SECRET 仍为默认值，生产环境必须改成随机长字符串！")
     if not settings.admin_token:
         logger.info("ADMIN_TOKEN 未配置，/admin 端点已禁用（安全默认）")
+    # 缓存结构版本检查：部署后若 _CACHE_VERSION 变了，自动清空旧结构缓存（防 stale→500）
+    from app.cache import ensure_cache_version
+    ensure_cache_version()
     init_db()
     global _scheduler
     if settings.enable_scheduler:

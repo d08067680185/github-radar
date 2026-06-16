@@ -239,9 +239,9 @@ def map_nodes(db: Session = Depends(get_db), limit: int = Query(400, le=800)):
             .limit(limit)
         ).all()
         return [
-            {"full_name": r.full_name, "stars": r.stars, "score": float(r.score),
-             "growth_score": float(r.growth_score), "activity_score": float(r.activity_score),
-             "health_score": float(r.health_score), "heat_score": float(r.heat_score),
+            {"full_name": r.full_name, "stars": r.stars or 0, "score": float(r.score or 0),
+             "growth_score": float(r.growth_score or 0), "activity_score": float(r.activity_score or 0),
+             "health_score": float(r.health_score or 0), "heat_score": float(r.heat_score or 0),
              "category": r.category, "language": r.language}
             for r in rows
         ]
@@ -299,8 +299,8 @@ def map_timeline(
                     last = pmap[d]
                 series.append(last if last is not None else r.stars)
             nodes.append({
-                "full_name": r.full_name, "stars": r.stars, "score": float(r.score),
-                "growth_score": float(r.growth_score), "category": r.category,
+                "full_name": r.full_name, "stars": r.stars or 0, "score": float(r.score or 0),
+                "growth_score": float(r.growth_score or 0), "category": r.category,
                 "language": r.language, "series": series,
             })
         return {"dates": dates, "nodes": nodes}

@@ -29,6 +29,20 @@ def _parse_dt(value: str | None) -> datetime | None:
 # 入库时需要做时间字段解析的列
 _DT_FIELDS = ("created_at", "pushed_at", "last_release_at")
 
+# 旗舰项目种子表：保证这些「众所周知该上榜」的巨头一定被收录，
+# 不因 star 区间分片偶发漏抓 + 30 天 prune 而消失（曾观察到 facebook/react 凭空消失）。
+# 按名直取详情（fetch_repos_by_names），与 trending 路同机制合并。
+FLAGSHIP_REPOS = [
+    "facebook/react", "vuejs/core", "vuejs/vue", "angular/angular", "sveltejs/svelte",
+    "torvalds/linux", "microsoft/vscode", "tensorflow/tensorflow", "pytorch/pytorch",
+    "kubernetes/kubernetes", "rust-lang/rust", "golang/go", "python/cpython",
+    "nodejs/node", "denoland/deno", "facebook/react-native", "flutter/flutter",
+    "django/django", "rails/rails", "laravel/laravel", "spring-projects/spring-boot",
+    "vercel/next.js", "facebook/docusaurus", "redis/redis", "postgres/postgres",
+    "elastic/elasticsearch", "apache/kafka", "moby/moby", "ollama/ollama",
+    "huggingface/transformers", "langchain-ai/langchain", "ggml-org/llama.cpp",
+]
+
 
 def discover(db: Session, min_stars: int | None = None, max_repos: int | None = None) -> int:
     """拉取热门仓库并 upsert。返回处理的仓库数。"""
@@ -75,6 +89,20 @@ def discover(db: Session, min_stars: int | None = None, max_repos: int | None = 
         except Exception as e:
             logger.warning("Trending 抓取失败（跳过）：%s", e)
             breakdown["trending"] = 0
+
+        # 第五路：旗舰种子表（best-effort）—— 保证巨头一定在库，补 sharding 漏抓
+        try:
+            existing = {r["full_name"] for r in merged.values()}
+            missing = [n for n in FLAGSHIP_REPOS if n not in existing]
+            f_found = client.fetch_repos_by_names(missing) if missing else []
+            for r in f_found:
+                merged[r["github_id"]] = r
+            breakdown["flagship"] = len(f_found)
+            if missing:
+                logger.info("策略 flagship：种子 %d 缺失，补抓 %d", len(missing), len(f_found))
+        except Exception as e:
+            logger.warning("旗舰种子抓取失败（跳过）：%s", e)
+            breakdown["flagship"] = 0
 
         repos = list(merged.values())
         quota = client.quota_remaining

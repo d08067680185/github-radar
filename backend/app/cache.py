@@ -11,7 +11,11 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-_NAMESPACE = "ghradar"
+# 缓存结构版本：**任何带 cached() 的接口响应结构变化（加/删字段、改类型）都要 +1**。
+# 版本进 key 命名空间 → 旧结构缓存自然失效，根治「改结构忘清缓存 → Pydantic 校验 500」。
+_CACHE_VERSION = 2
+_ROOT = "ghradar"
+_NAMESPACE = f"{_ROOT}:v{_CACHE_VERSION}"
 _DEFAULT_TTL = 3600  # 1 小时，与前端 ISR 对齐
 
 try:
@@ -48,11 +52,13 @@ def cached(name: str, params: dict, loader, ttl: int = _DEFAULT_TTL):
 
 
 def invalidate_all():
-    """清空本系统所有缓存（pipeline 跑完调用）。"""
+    """清空本系统所有缓存（pipeline 跑完调用）。扫 root 前缀，连旧版本残留一并清。"""
     if _client is None:
         return 0
     try:
-        keys = list(_client.scan_iter(f"{_NAMESPACE}:*"))
+        keys = list(_client.scan_iter(f"{_ROOT}:*"))
+        # 保留限流键（ghradar:rl:*），只清数据缓存
+        keys = [k for k in keys if not k.startswith(f"{_ROOT}:rl:")]
         if keys:
             _client.delete(*keys)
         logger.info("缓存已失效：%d 个 key", len(keys))
@@ -60,3 +66,18 @@ def invalidate_all():
     except Exception as e:  # noqa: BLE001
         logger.warning("缓存失效失败：%s", e)
         return 0
+
+
+def ensure_cache_version():
+    """启动时调用：缓存结构版本变了就自动清空旧缓存（部署即生效，无需手动清）。"""
+    if _client is None:
+        return
+    marker = f"{_ROOT}:cachever"
+    try:
+        prev = _client.get(marker)
+        if prev != str(_CACHE_VERSION):
+            n = invalidate_all()
+            _client.set(marker, str(_CACHE_VERSION))
+            logger.info("缓存版本 %s→v%s，已自动清空 %d 个旧 key", prev, _CACHE_VERSION, n)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("缓存版本检查失败：%s", e)
