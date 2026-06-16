@@ -113,31 +113,52 @@ def rising_stars(
     return cached("rising", {"days": days, "limit": limit, "off": offset}, loader)
 
 
+def _movers_span(cutoff):
+    """[今天-days, 今天] 窗口内每个项目的最早/最晚快照日。"""
+    return (
+        select(
+            ProjectSnapshot.project_id.label("pid"),
+            func.min(ProjectSnapshot.snapshot_date).label("d0"),
+            func.max(ProjectSnapshot.snapshot_date).label("d1"),
+        )
+        .where(ProjectSnapshot.snapshot_date >= cutoff)
+        .group_by(ProjectSnapshot.project_id)
+        .subquery()
+    )
+
+
 @router.get("/rankings/movers", response_model=list[MoverOut])
 def movers(
+    response: Response,
     db: Session = Depends(get_db),
     days: int = Query(7, ge=1, le=90),
-    limit: int = Query(10, le=50),
+    limit: int = Query(10, le=100),
+    offset: int = Query(0, ge=0),
 ):
-    """上升最快：窗口内 star 绝对增量最大的项目（首页模块用）。
+    """上升最快：窗口内 star 绝对增量最大的项目（首页模块 + Trending 时间窗）。
 
     取每个项目在 [今天-days, 今天] 窗口内最早/最晚两条快照，算 star 净增。
-    需要至少两天快照（冷启动只有单日时返回空，前端据此隐藏模块）。
+    需要至少两天快照（冷启动只有单日时返回空）。总数见 X-Total-Count。
     """
     from datetime import date, timedelta
     cutoff = date.today() - timedelta(days=days)
 
+    def count_loader():
+        span = _movers_span(cutoff)
+        s0 = aliased(ProjectSnapshot)
+        s1 = aliased(ProjectSnapshot)
+        gain = s1.stars - s0.stars
+        return db.execute(
+            select(func.count())
+            .select_from(Project)
+            .join(span, span.c.pid == Project.id)
+            .join(s0, (s0.project_id == span.c.pid) & (s0.snapshot_date == span.c.d0))
+            .join(s1, (s1.project_id == span.c.pid) & (s1.snapshot_date == span.c.d1))
+            .where(Project.is_archived.is_(False), span.c.d1 > span.c.d0, gain > 0)
+        ).scalar_one()
+
     def loader():
-        span = (
-            select(
-                ProjectSnapshot.project_id.label("pid"),
-                func.min(ProjectSnapshot.snapshot_date).label("d0"),
-                func.max(ProjectSnapshot.snapshot_date).label("d1"),
-            )
-            .where(ProjectSnapshot.snapshot_date >= cutoff)
-            .group_by(ProjectSnapshot.project_id)
-            .subquery()
-        )
+        span = _movers_span(cutoff)
         s0 = aliased(ProjectSnapshot)
         s1 = aliased(ProjectSnapshot)
         gain = (s1.stars - s0.stars).label("gain")
@@ -148,7 +169,7 @@ def movers(
             .join(s1, (s1.project_id == span.c.pid) & (s1.snapshot_date == span.c.d1))
             .where(Project.is_archived.is_(False), span.c.d1 > span.c.d0, gain > 0)
             .order_by(desc(gain))
-            .limit(limit)
+            .offset(offset).limit(limit)
         )
         out = []
         for p, then, now in db.execute(stmt).all():
@@ -159,7 +180,8 @@ def movers(
             out.append(d)
         return out
 
-    return cached("movers", {"days": days, "limit": limit}, loader)
+    response.headers["X-Total-Count"] = str(cached("movers_count", {"days": days}, count_loader))
+    return cached("movers", {"days": days, "limit": limit, "off": offset}, loader)
 
 
 @router.get("/languages", response_model=list[str])

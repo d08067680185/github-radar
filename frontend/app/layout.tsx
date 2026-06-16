@@ -10,6 +10,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import LocaleToggle from "@/components/LocaleToggle";
 import DataFreshness from "@/components/DataFreshness";
 import CompareBar from "@/components/CompareBar";
+import CommandPalette from "@/components/CommandPalette";
+import CommandPaletteTrigger from "@/components/CommandPaletteTrigger";
 
 // 防止主题闪烁：在首屏绘制前读取 localStorage 设置 data-theme
 const THEME_INIT = `(function(){try{var t=localStorage.getItem('ghradar_theme');if(t==='light')document.documentElement.dataset.theme='light';}catch(e){}})();`;
@@ -52,6 +54,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <div className="container inner">
                   <a href="/" className="logo">🛰️ GitHub Radar</a>
                   <Nav />
+                  <CommandPaletteTrigger />
                   <LocaleToggle />
                   <ThemeToggle />
                 </div>
@@ -67,6 +70,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </div>
               </footer>
               <CompareBar />
+              <CommandPalette />
             </CompareProvider>
           </AuthProvider>
         </LocaleProvider>

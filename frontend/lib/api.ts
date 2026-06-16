@@ -88,6 +88,8 @@ export const api = {
   org: (owner: string) => get<Org>(`/api/org/${encodeURIComponent(owner)}`),
   movers: (days = 7, limit = 6) =>
     get<Mover[]>(`/api/rankings/movers?days=${days}&limit=${limit}`),
+  moversPaged: (p: { days?: number; limit?: number; offset?: number } = {}) =>
+    getPaged(`/api/rankings/movers${qs(p)}`),
   topics: (limit = 60) => get<Category[]>(`/api/topics?limit=${limit}`),
   topicPaged: (topic: string, p: { limit?: number; offset?: number } = {}) =>
     getPaged(`/api/topic/${encodeURIComponent(topic)}${qs(p)}`),

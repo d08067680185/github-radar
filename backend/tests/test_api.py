@@ -147,10 +147,15 @@ def test_movers_by_star_gain(client, make_project, db):
         ProjectSnapshot(project_id=small.id, snapshot_date=today, stars=1100, forks=0, open_issues=0),
     ])
     db.commit()
-    out = client.get("/api/rankings/movers?days=7&limit=10").json()
+    r = client.get("/api/rankings/movers?days=7&limit=10")
+    out = r.json()
     assert [p["full_name"] for p in out] == ["a/big", "a/small"]   # 按绝对增量降序
     assert out[0]["star_gain"] == 2000
     assert out[1]["gain_pct"] == 10.0                              # 100/1000
+    assert r.headers["X-Total-Count"] == "2"                       # 翻页总数
+    # 翻页：offset 跳过第一个
+    page2 = client.get("/api/rankings/movers?days=7&limit=1&offset=1").json()
+    assert [p["full_name"] for p in page2] == ["a/small"]
 
 
 def test_movers_empty_without_two_snapshots(client, make_project, db):
