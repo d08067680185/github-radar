@@ -10,7 +10,9 @@ export const dict = {
     nav_languages: "语言", nav_search: "搜索", nav_map: "星图", nav_insights: "洞察", nav_picks: "精选", nav_digest: "周报", nav_account: "我的", nav_about: "关于",
     // 星图地图
     map_h: "🌌 开源星图", map_sub: "头部项目的星系全景 —— 气泡=项目，大小=Star，颜色=领域，按领域聚成星团。悬停看详情、点击进入、可拖拽。",
-    map_hint: "悬停查看 · 点击进入项目 · 拖拽移动 · 点图例高亮领域", map_loading: "正在排布星系…",
+    map_hint: "滚轮缩放 · 拖拽平移 · 悬停查看 · 点击进入 · 点图例筛领域", map_loading: "正在排布星系…",
+    map_search_ph: "在星图中搜索项目…", map_size_by: "大小：", map_size_stars: "Star", map_size_score: "评分", map_size_growth: "增长",
+    map_reset: "复位视图", map_no_match: "未找到",
     // 通用
     rss: "📡 RSS 订阅", viewAll: "查看全部 →", backToList: "← 返回榜单",
     cmdk_ph: "搜索项目，或跳转页面…", cmdk_projects: "项目", cmdk_pages: "页面", cmdk_hint: "快速搜索",
@@ -90,7 +92,9 @@ export const dict = {
     nav_top: "Top", nav_trending: "Trending", nav_rising: "Rising", nav_categories: "Categories",
     nav_languages: "Languages", nav_search: "Search", nav_map: "Galaxy", nav_insights: "Insights", nav_picks: "Picks", nav_digest: "Digest", nav_account: "Account", nav_about: "About",
     map_h: "🌌 Open Source Galaxy", map_sub: "A galaxy of top projects — bubble = project, size = stars, color = domain, clustered by domain. Hover for details, click to open, drag to move.",
-    map_hint: "Hover for details · click to open · drag to move · click legend to highlight", map_loading: "Arranging the galaxy…",
+    map_hint: "Scroll to zoom · drag to pan · hover for details · click to open · click legend to filter", map_loading: "Arranging the galaxy…",
+    map_search_ph: "Search projects in the galaxy…", map_size_by: "Size: ", map_size_stars: "Stars", map_size_score: "Score", map_size_growth: "Growth",
+    map_reset: "Reset view", map_no_match: "No match",
     rss: "📡 RSS", viewAll: "View all →", backToList: "← Back to list",
     cmdk_ph: "Search projects, or jump to a page…", cmdk_projects: "Projects", cmdk_pages: "Pages", cmdk_hint: "Quick search",
     score: "Score", growth: "Growth", activity: "Activity", health: "Health", heat: "Heat",

@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function MapPage() {
   const t = await getDict();
-  const nodes = await api.mapNodes(400).catch(() => []);
+  const nodes = await api.mapNodes(700).catch(() => []);
   return (
     <>
       <h1 className="page-title">{t.map_h}</h1>
