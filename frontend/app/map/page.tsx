@@ -4,7 +4,9 @@ import { api } from "@/lib/api";
 import { getDict } from "@/lib/i18n-server";
 import BubbleGalaxy from "@/components/BubbleGalaxy";
 
-export const revalidate = 3600;
+// 动态渲染：避免构建期/部署时后端不可达把空数据烤进静态页（与分类/语言页一致）。
+// 数据侧后端有 Redis 缓存撑性能。
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getDict();
