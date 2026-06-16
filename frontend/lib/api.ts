@@ -32,6 +32,7 @@ async function getPaged(path: string, revalidate: number = REVALIDATE): Promise<
 interface RankParams {
   language?: string;
   category?: string;
+  sort?: string;
   limit?: number;
   offset?: number;
 }
@@ -85,13 +86,14 @@ export const api = {
       } | null;
     }>(`/api/projects/${owner}/${name}/extras`, 86400),
   searchPaged: (p: SearchParams) => getPaged(`/api/search${qs(p)}`, 60),
-  org: (owner: string) => get<Org>(`/api/org/${encodeURIComponent(owner)}`),
+  org: (owner: string, sort?: string) =>
+    get<Org>(`/api/org/${encodeURIComponent(owner)}${sort ? `?sort=${sort}` : ""}`),
   movers: (days = 7, limit = 6) =>
     get<Mover[]>(`/api/rankings/movers?days=${days}&limit=${limit}`),
   moversPaged: (p: { days?: number; limit?: number; offset?: number } = {}) =>
     getPaged(`/api/rankings/movers${qs(p)}`),
   topics: (limit = 60) => get<Category[]>(`/api/topics?limit=${limit}`),
-  topicPaged: (topic: string, p: { limit?: number; offset?: number } = {}) =>
+  topicPaged: (topic: string, p: { sort?: string; limit?: number; offset?: number } = {}) =>
     getPaged(`/api/topic/${encodeURIComponent(topic)}${qs(p)}`),
   digestArchive: () => get<DigestArchiveListItem[]>(`/api/digest/archive`),
   digestArchiveDetail: (week: string) =>

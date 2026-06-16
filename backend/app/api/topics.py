@@ -11,6 +11,7 @@ from app.db import get_db
 from app.models import Project
 from app.schemas import ProjectOut, CategoryOut
 from app.cache import cached
+from app.api.rankings import order_clauses, SORT_OPTIONS
 
 router = APIRouter(prefix="/api", tags=["topics"])
 
@@ -39,10 +40,14 @@ def topic_projects(
     topic: str,
     response: Response,
     db: Session = Depends(get_db),
+    sort: str = Query("score"),
     limit: int = Query(30, le=200),
     offset: int = Query(0, ge=0),
 ):
-    """带某 topic 的项目，按综合分降序。总数见 X-Total-Count。"""
+    """带某 topic 的项目，默认按综合分降序，可用 sort 切换。总数见 X-Total-Count。"""
+    if sort not in SORT_OPTIONS:
+        sort = "score"
+
     def count_loader():
         return db.execute(
             select(func.count()).select_from(Project)
@@ -53,10 +58,10 @@ def topic_projects(
         rows = db.execute(
             select(Project)
             .where(Project.is_archived.is_(False), Project.topics.any(topic))
-            .order_by(desc(Project.score))
+            .order_by(*order_clauses(sort))
             .offset(offset).limit(limit)
         ).scalars().all()
         return [ProjectOut.model_validate(p).model_dump(mode="json") for p in rows]
 
     response.headers["X-Total-Count"] = str(cached("topic_count", {"t": topic}, count_loader))
-    return cached("topic", {"t": topic, "limit": limit, "off": offset}, loader)
+    return cached("topic", {"t": topic, "sort": sort, "limit": limit, "off": offset}, loader)

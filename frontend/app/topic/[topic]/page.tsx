@@ -4,6 +4,7 @@ import { api, PER_PAGE } from "@/lib/api";
 import { getDict } from "@/lib/i18n-server";
 import RankingList from "@/components/RankingList";
 import Pagination from "@/components/Pagination";
+import SortSelect from "@/components/SortSelect";
 
 export const dynamic = "force-dynamic";
 
@@ -26,13 +27,16 @@ export default async function TopicPage({
   searchParams,
 }: {
   params: Promise<{ topic: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; sort?: string }>;
 }) {
   const { topic } = await params;
   const tp = decodeURIComponent(topic);
   const t = await getDict();
-  const page = Math.max(1, Number((await searchParams).page) || 1);
+  const sp = await searchParams;
+  const page = Math.max(1, Number(sp.page) || 1);
+  const sort = sp.sort || "score";
   const { items, total } = await api.topicPaged(tp, {
+    sort,
     limit: PER_PAGE,
     offset: (page - 1) * PER_PAGE,
   });
@@ -40,10 +44,13 @@ export default async function TopicPage({
   return (
     <>
       <a href="/topics" style={{ fontSize: 13, color: "var(--muted)" }}>← {t.nav_topics}</a>
-      <h1 className="page-title">{t.topic_h(tp)}</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <h1 className="page-title">{t.topic_h(tp)}</h1>
+        <SortSelect current={sort} />
+      </div>
       <p className="page-sub">{t.topic_sub(tp)}</p>
       <RankingList projects={items} metric="score" startRank={(page - 1) * PER_PAGE} />
-      <Pagination total={total} page={page} basePath={`/topic/${topic}`} />
+      <Pagination total={total} page={page} basePath={`/topic/${topic}`} query={sort !== "score" ? { sort } : {}} />
     </>
   );
 }

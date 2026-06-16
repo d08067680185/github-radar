@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import { catName } from "@/lib/i18n";
 import RankingList from "@/components/RankingList";
+import SortSelect from "@/components/SortSelect";
 
 export const revalidate = 3600;
 
@@ -12,9 +13,9 @@ function fmt(n: number): string {
   return String(n);
 }
 
-async function load(owner: string) {
+async function load(owner: string, sort?: string) {
   try {
-    return await api.org(owner);
+    return await api.org(owner, sort);
   } catch {
     return null;
   }
@@ -40,11 +41,14 @@ export async function generateMetadata({
 
 export default async function OrgPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ owner: string }>;
+  searchParams: Promise<{ sort?: string }>;
 }) {
   const { owner } = await params;
-  const [t, locale, org] = await Promise.all([getDict(), getLocale(), load(owner)]);
+  const sort = (await searchParams).sort || "score";
+  const [t, locale, org] = await Promise.all([getDict(), getLocale(), load(owner, sort)]);
   if (!org) notFound();
 
   const stats = [
@@ -113,7 +117,10 @@ export default async function OrgPage({
         </div>
       )}
 
-      <h2 className="page-title" style={{ fontSize: 22 }}>{t.org_all_projects}</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <h2 className="page-title" style={{ fontSize: 22 }}>{t.org_all_projects}</h2>
+        <SortSelect current={sort} />
+      </div>
       <RankingList projects={org.projects} metric="score" />
     </>
   );

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { api, PER_PAGE } from "@/lib/api";
 import RankingList from "@/components/RankingList";
 import Pagination from "@/components/Pagination";
+import SortSelect from "@/components/SortSelect";
 
 // 动态渲染（仍为 SSR，SEO 不受影响）：避免构建期依赖 backend 在线做 SSG，
 // 且页面读 cookie（i18n）与 ISR 静态化冲突会 500；后端榜单有 Redis 缓存撑性能
@@ -32,14 +33,17 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; sort?: string }>;
 }) {
   const { slug } = await params;
   const cat = await findCategory(slug);
   if (!cat) notFound();
-  const page = Math.max(1, Number((await searchParams).page) || 1);
+  const sp = await searchParams;
+  const page = Math.max(1, Number(sp.page) || 1);
+  const sort = sp.sort || "score";
   const { items, total } = await api.topPaged({
     category: slug,
+    sort,
     limit: PER_PAGE,
     offset: (page - 1) * PER_PAGE,
   });
@@ -50,10 +54,13 @@ export default async function CategoryPage({
   const name = catName(slug, locale, cat.name);
   return (
     <>
-      <h1 className="page-title">{name}</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <h1 className="page-title">{name}</h1>
+        <SortSelect current={sort} />
+      </div>
       <p className="page-sub">{en ? `Top open-source projects in ${name} (${cat.count} indexed).` : `${name} 领域的优秀开源项目（共 ${cat.count} 个收录）。`}</p>
       <RankingList projects={items} metric="score" startRank={(page - 1) * PER_PAGE} />
-      <Pagination total={total} page={page} basePath={`/category/${slug}`} />
+      <Pagination total={total} page={page} basePath={`/category/${slug}`} query={sort !== "score" ? { sort } : {}} />
     </>
   );
 }

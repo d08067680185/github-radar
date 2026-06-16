@@ -13,6 +13,26 @@ from app.cache import cached
 
 router = APIRouter(prefix="/api", tags=["rankings"])
 
+# 榜单可选排序：sort 值 → 排序子句（均降序，附 score 作稳定次序）。
+# 给前端 SortSelect 和各列表页（首页/分类/语言/Topic）共用。
+SORT_OPTIONS = ("score", "stars", "growth", "activity", "forks", "updated", "newest")
+
+
+def order_clauses(sort: str):
+    if sort == "stars":
+        return [desc(Project.stars), desc(Project.score)]
+    if sort == "growth":
+        return [desc(Project.growth_score), desc(Project.score)]
+    if sort == "activity":
+        return [desc(Project.activity_score), desc(Project.score)]
+    if sort == "forks":
+        return [desc(Project.forks), desc(Project.score)]
+    if sort == "updated":
+        return [desc(Project.pushed_at).nulls_last(), desc(Project.score)]
+    if sort == "newest":
+        return [desc(Project.created_at).nulls_last(), desc(Project.score)]
+    return [desc(Project.score)]  # 默认综合分
+
 
 def _base_query(language: str | None, category: str | None):
     stmt = select(Project).where(Project.is_archived.is_(False))
@@ -45,18 +65,27 @@ def top_ranking(
     db: Session = Depends(get_db),
     language: str | None = Query(None),
     category: str | None = Query(None),
+    sort: str = Query("score"),
     limit: int = Query(50, le=200),
     offset: int = Query(0, ge=0),
 ):
-    """综合优质榜：按 score 降序（长期靠谱）。总数见 X-Total-Count 头。"""
+    """优质榜：默认按 score 降序，可用 sort 切换（stars/growth/activity/forks/updated/newest）。
+
+    用于首页综合榜 + 分类/语言子榜的用户排序。总数见 X-Total-Count 头。
+    """
+    if sort not in SORT_OPTIONS:
+        sort = "score"
+
     def loader():
         stmt = (
             _base_query(language, category)
-            .order_by(desc(Project.score)).offset(offset).limit(limit)
+            .order_by(*order_clauses(sort)).offset(offset).limit(limit)
         )
         return _serialize(db.execute(stmt).scalars().all())
     response.headers["X-Total-Count"] = str(_count(db, language, category))
-    return cached("top", {"lang": language, "cat": category, "limit": limit, "off": offset}, loader)
+    return cached(
+        "top", {"lang": language, "cat": category, "sort": sort, "limit": limit, "off": offset}, loader
+    )
 
 
 @router.get("/rankings/trending", response_model=list[ProjectOut])

@@ -12,6 +12,30 @@ def test_top_ranking_order_and_total(client, make_project):
     assert r.headers["X-Total-Count"] == "3"
 
 
+def test_top_sort_options(client, make_project):
+    make_project(full_name="a/p1", score=50, stars=9000, forks=10, growth_score=20)
+    make_project(full_name="a/p2", score=90, stars=1000, forks=99, growth_score=80)
+    # 默认 score 降序
+    assert [p["full_name"] for p in client.get("/api/rankings/top").json()] == ["a/p2", "a/p1"]
+    # 按 stars
+    assert [p["full_name"] for p in client.get("/api/rankings/top?sort=stars").json()] == ["a/p1", "a/p2"]
+    # 按 forks
+    assert [p["full_name"] for p in client.get("/api/rankings/top?sort=forks").json()] == ["a/p2", "a/p1"]
+    # 按 growth
+    assert [p["full_name"] for p in client.get("/api/rankings/top?sort=growth").json()] == ["a/p2", "a/p1"]
+    # 非法 sort 回退 score
+    assert [p["full_name"] for p in client.get("/api/rankings/top?sort=bogus").json()] == ["a/p2", "a/p1"]
+
+
+def test_top_sort_newest_updated(client, make_project):
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    make_project(full_name="a/old", created_at=now - timedelta(days=100), pushed_at=now - timedelta(days=50), score=80)
+    make_project(full_name="a/new", created_at=now - timedelta(days=2), pushed_at=now - timedelta(days=1), score=10)
+    assert [p["full_name"] for p in client.get("/api/rankings/top?sort=newest").json()] == ["a/new", "a/old"]
+    assert [p["full_name"] for p in client.get("/api/rankings/top?sort=updated").json()] == ["a/new", "a/old"]
+
+
 def test_top_pagination_offset(client, make_project):
     for i in range(5):
         make_project(full_name=f"a/r{i}", score=i)

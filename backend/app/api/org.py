@@ -5,7 +5,7 @@
 """
 from collections import Counter
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, desc, func
 from sqlalchemy.orm import Session
 
@@ -14,18 +14,22 @@ from app.models import Project
 from app.schemas import OrgOut, ProjectOut, CategoryOut
 from app.scorer.classify import category_name
 from app.cache import cached
+from app.api.rankings import order_clauses, SORT_OPTIONS
 
 router = APIRouter(prefix="/api", tags=["org"])
 
 
 @router.get("/org/{owner}", response_model=OrgOut)
-def org_detail(owner: str, db: Session = Depends(get_db)):
-    """某 owner 名下所有未归档项目的聚合视图。"""
+def org_detail(owner: str, db: Session = Depends(get_db), sort: str = Query("score")):
+    """某 owner 名下所有未归档项目的聚合视图。项目列表可用 sort 切换排序。"""
+    if sort not in SORT_OPTIONS:
+        sort = "score"
+
     def loader():
         rows = db.execute(
             select(Project)
             .where(Project.owner == owner, Project.is_archived.is_(False))
-            .order_by(desc(Project.score))
+            .order_by(*order_clauses(sort))
         ).scalars().all()
         if not rows:
             return None
@@ -58,7 +62,7 @@ def org_detail(owner: str, db: Session = Depends(get_db)):
             projects=[ProjectOut.model_validate(p) for p in rows],
         ).model_dump(mode="json")
 
-    result = cached("org", {"owner": owner}, loader)
+    result = cached("org", {"owner": owner, "sort": sort}, loader)
     if result is None:
         raise HTTPException(404, "owner not found")
     return result
