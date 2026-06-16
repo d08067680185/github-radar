@@ -80,6 +80,39 @@ def test_map_respects_limit(client, make_project):
     assert len(client.get("/api/map?limit=3").json()) == 3
 
 
+def test_score_badge_svg(client, make_project):
+    make_project(full_name="acme/widget", score=87)
+    r = client.get("/api/badge/acme/widget.svg")
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("image/svg+xml")
+    assert "<svg" in r.text and "87 / 100" in r.text
+    assert "GitHub Radar" in r.text
+    # 自定义 label
+    r2 = client.get("/api/badge/acme/widget.svg?label=Radar+Score")
+    assert "Radar Score" in r2.text
+
+
+def test_score_badge_unknown_returns_grey(client):
+    # 不存在的项目也返回有效 SVG（unknown），不 404，便于 <img> 嵌入
+    r = client.get("/api/badge/no/such.svg")
+    assert r.status_code == 200 and "unknown" in r.text
+
+
+def test_topics_aggregate_and_filter(client, make_project):
+    make_project(full_name="a/x", topics=["cli", "rust"], score=90)
+    make_project(full_name="a/y", topics=["cli", "go"], score=80)
+    make_project(full_name="a/z", topics=["web"], score=70)
+    make_project(full_name="a/dead", topics=["cli"], is_archived=True)  # 归档不计
+    # 热门 topic 聚合：cli 出现 2 次（排除归档）排第一
+    tops = client.get("/api/topics").json()
+    counts = {t["slug"]: t["count"] for t in tops}
+    assert counts["cli"] == 2 and counts.get("web") == 1
+    # 单 topic 项目榜（按 score 降序）
+    r = client.get("/api/topic/cli")
+    assert r.headers["X-Total-Count"] == "2"
+    assert [p["full_name"] for p in r.json()] == ["a/x", "a/y"]
+
+
 def test_search_suggest_prefix_first(client, make_project):
     make_project(full_name="vercel/next.js", name="next.js", stars=9000, score=95)
     make_project(full_name="remix-run/remix", name="remix", description="builds on next", stars=8000, score=80)

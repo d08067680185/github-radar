@@ -61,6 +61,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <div className="container">
                   GitHub Radar · {t.footer}
                   <DataFreshness />
+                  <a href="/topics">{t.nav_topics}</a>
                   <a href="/about">{t.nav_about}</a>
                   <a href="/feed/new.xml">{t.rss}</a>
                 </div>

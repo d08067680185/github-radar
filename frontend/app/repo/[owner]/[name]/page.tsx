@@ -10,6 +10,7 @@ import GrowthBadges from "@/components/GrowthBadges";
 import FavoriteButton from "@/components/FavoriteButton";
 import CompareButton from "@/components/CompareButton";
 import ShareButton from "@/components/ShareButton";
+import BadgeEmbed from "@/components/BadgeEmbed";
 
 export const revalidate = 3600;
 
@@ -149,7 +150,7 @@ export default async function RepoPage({
       {project.topics.length > 0 && (
         <div style={{ margin: "16px 0" }}>
           {project.topics.map((topic) => (
-            <span className="topic-tag" key={topic}>{topic}</span>
+            <a className="topic-tag" key={topic} href={`/topic/${encodeURIComponent(topic)}`}>{topic}</a>
           ))}
         </div>
       )}
@@ -230,6 +231,8 @@ export default async function RepoPage({
           {t.viewOnGh}
         </a>
       </p>
+
+      <BadgeEmbed fullName={project.full_name} siteUrl={process.env.SITE_URL || ""} />
 
       {similar.length > 0 && (
         <section style={{ marginTop: 36 }}>

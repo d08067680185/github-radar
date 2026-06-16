@@ -208,7 +208,9 @@ header.site nav a.active {
 .topic-tag {
   display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 7px;
   background: var(--surface-2); color: var(--muted); margin: 0 7px 7px 0; border: 1px solid var(--border-soft);
+  text-decoration: none; transition: color .15s, border-color .15s;
 }
+a.topic-tag:hover { color: var(--text); border-color: var(--accent); }
 
 /* ---------- 搜索 ---------- */
 .search-form { margin: 18px 0 26px; }

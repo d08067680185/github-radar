@@ -11,15 +11,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/categories`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE}/languages`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE}/digest`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${SITE}/topics`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
   ];
 
   try {
-    const [langs, cats, top, digests] = await Promise.all([
+    const [langs, cats, top, digests, topicList] = await Promise.all([
       api.languages(),
       api.categories(),
       api.top({ limit: 200 }),
       api.digestArchive().catch(() => []),
+      api.topics(60).catch(() => []),
     ]);
+    const topicPages: MetadataRoute.Sitemap = topicList.map((tp) => ({
+      url: `${SITE}/topic/${encodeURIComponent(tp.slug)}`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.5,
+    }));
     const digestPages: MetadataRoute.Sitemap = digests.map((d) => ({
       url: `${SITE}/digest/${d.week_date}`,
       lastModified: now,
@@ -45,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.5,
     }));
-    return [...staticPages, ...langPages, ...catPages, ...repoPages, ...digestPages];
+    return [...staticPages, ...langPages, ...catPages, ...repoPages, ...digestPages, ...topicPages];
   } catch {
     return staticPages;
   }
