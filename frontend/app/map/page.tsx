@@ -23,9 +23,13 @@ export default async function MapPage() {
     <>
       <h1 className="page-title">{t.map_h}</h1>
       <p className="page-sub">{t.map_sub}</p>
-      <Suspense>
-        <BubbleGalaxy nodes={nodes} timeline={timeline} />
-      </Suspense>
+      {nodes.length === 0 ? (
+        <p className="page-sub" style={{ marginTop: 32 }}>{t.map_empty}</p>
+      ) : (
+        <Suspense>
+          <BubbleGalaxy nodes={nodes} timeline={timeline} />
+        </Suspense>
+      )}
     </>
   );
 }

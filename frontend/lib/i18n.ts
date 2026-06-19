@@ -15,6 +15,7 @@ export const dict = {
     map_reset: "复位视图", map_no_match: "未找到",
     map_group_by: "聚团：", map_group_cat: "领域", map_group_lang: "语言", map_other: "其它",
     map_time: "时间轴", map_now: "实时", map_detail: "进入详情 →",
+    map_empty: "星图数据暂时加载不出来，请稍后刷新重试。",
     // 通用
     rss: "📡 RSS 订阅", viewAll: "查看全部 →", backToList: "← 返回榜单", skip_to_content: "跳到主内容",
     cmdk_ph: "搜索项目，或跳转页面…", cmdk_projects: "项目", cmdk_pages: "页面", cmdk_hint: "快速搜索",
@@ -99,6 +100,7 @@ export const dict = {
     map_reset: "Reset view", map_no_match: "No match",
     map_group_by: "Cluster: ", map_group_cat: "Domain", map_group_lang: "Language", map_other: "Other",
     map_time: "Timeline", map_now: "Now", map_detail: "Open details →",
+    map_empty: "Galaxy data failed to load. Please refresh and try again.",
     rss: "📡 RSS", viewAll: "View all →", backToList: "← Back to list", skip_to_content: "Skip to content",
     cmdk_ph: "Search projects, or jump to a page…", cmdk_projects: "Projects", cmdk_pages: "Pages", cmdk_hint: "Quick search",
     score: "Score", growth: "Growth", activity: "Activity", health: "Health", heat: "Heat",
