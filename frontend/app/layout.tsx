@@ -3,7 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
 import { CompareProvider } from "@/lib/compare";
 import { LocaleProvider } from "@/lib/i18n-client";
-import { getLocale } from "@/lib/i18n-server";
+import { getLocale, getCanonicalPath } from "@/lib/i18n-server";
 import { getDictFor } from "@/lib/i18n";
 import Nav from "@/components/Nav";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -41,10 +41,21 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   const t = getDictFor(locale);
+
+  // hreflang 对照：中文走规范路径，英文走 /en 前缀；x-default 指向中文（默认语种）。
+  // 让搜索引擎知道 / ↔ /en 是同一内容的两种语言版本，各自独立索引。
+  const canonicalPath = await getCanonicalPath();
+  const zhUrl = `${SITE_URL}${canonicalPath}`;
+  const enUrl = `${SITE_URL}${canonicalPath === "/" ? "/en" : `/en${canonicalPath}`}`;
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+        <link rel="alternate" hrefLang="zh" href={zhUrl} />
+        <link rel="alternate" hrefLang="en" href={enUrl} />
+        <link rel="alternate" hrefLang="x-default" href={zhUrl} />
+        <link rel="canonical" href={locale === "en" ? enUrl : zhUrl} />
       </head>
       <body>
         <LocaleProvider locale={locale}>
