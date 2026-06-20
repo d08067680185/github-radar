@@ -22,10 +22,19 @@ export async function generateMetadata({
   const { slug } = await params;
   const cat = await findCategory(slug);
   if (!cat) return {};
-  return {
-    title: `${cat.name} 领域优秀开源项目`,
-    description: `${cat.name} 领域综合评分排序的优秀开源项目榜单，每日更新。`,
-  };
+  const { getLocale } = await import("@/lib/i18n-server");
+  const { catName } = await import("@/lib/i18n");
+  const locale = await getLocale();
+  const name = catName(slug, locale, cat.name);
+  return locale === "en"
+    ? {
+        title: `Top ${name} open-source projects`,
+        description: `Top ${name} open-source projects ranked by composite score, updated daily.`,
+      }
+    : {
+        title: `${name} 领域优秀开源项目`,
+        description: `${name} 领域综合评分排序的优秀开源项目榜单，每日更新。`,
+      };
 }
 
 export default async function CategoryPage({

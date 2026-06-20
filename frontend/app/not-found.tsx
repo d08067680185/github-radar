@@ -1,9 +1,12 @@
-export default function NotFound() {
+import { getDict } from "@/lib/i18n-server";
+
+export default async function NotFound() {
+  const t = await getDict();
   return (
     <>
-      <h1 className="page-title">404 — 没找到</h1>
+      <h1 className="page-title">{t.nf_title}</h1>
       <p className="page-sub">
-        这个项目还没被 GitHub Radar 收录，或链接有误。<a href="/">回到综合榜</a>。
+        {t.nf_desc} <a href="/">{t.nf_back}</a>
       </p>
     </>
   );

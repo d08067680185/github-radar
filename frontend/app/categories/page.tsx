@@ -5,10 +5,19 @@ import { catName } from "@/lib/i18n";
 import RankingList from "@/components/RankingList";
 
 export const revalidate = 3600;
-export const metadata: Metadata = {
-  title: "按领域浏览开源项目",
-  description: "按 AI、Web 前端、后端、数据库、DevOps 等领域浏览优秀开源项目榜单。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { getLocale } = await import("@/lib/i18n-server");
+  const en = (await getLocale()) === "en";
+  return en
+    ? {
+        title: "Browse open-source projects by domain",
+        description: "Browse top open-source projects by domain: AI, Web Frontend, Backend, Database, DevOps and more.",
+      }
+    : {
+        title: "按领域浏览开源项目",
+        description: "按 AI、Web 前端、后端、数据库、DevOps 等领域浏览优秀开源项目榜单。",
+      };
+}
 
 export default async function CategoriesPage() {
   const t = await getDict();

@@ -6,27 +6,47 @@
 import re
 
 # (category, slug, 关键词集合)。关键词在 topics 或描述（小写）中命中即归类。
+# 顺序即优先级，命中第一个即返回。「学习资源」放最前：awesome-go 这类列表应归学习而非语言对应技术类。
 CATEGORY_RULES: list[tuple[str, str, set[str]]] = [
+    ("学习资源 / Awesome", "learning", {
+        "awesome", "awesome-list", "awesome-lists", "tutorial", "tutorials",
+        "book", "books", "ebook", "roadmap", "interview", "interview-questions",
+        "leetcode", "coding-interview", "computer-science", "curriculum",
+        "study-plan", "cheatsheet", "cheatsheets", "education", "educational",
+        "course", "courses", "self-taught", "learning-resources",
+        "free-programming-books", "algorithm", "algorithms",
+    }),
     ("AI / 机器学习", "ai-ml", {
-        "ai", "machine-learning", "deep-learning", "llm", "gpt", "nlp",
-        "neural-network", "transformer", "diffusion", "agent", "rag",
+        "ai", "machine-learning", "deep-learning", "llm", "llms", "gpt", "nlp",
+        "neural-network", "transformer", "diffusion", "agent", "agents", "rag",
         "tensorflow", "pytorch", "inference", "embedding", "chatbot",
+        "langchain", "openai", "chatgpt", "generative-ai", "genai",
+        "stable-diffusion", "computer-vision", "mlops", "fine-tuning",
+        "prompt-engineering", "llamaindex", "huggingface",
     }),
     ("Web 前端", "web-frontend", {
         "frontend", "react", "vue", "angular", "svelte", "css", "ui",
         "component", "tailwind", "nextjs", "web-components", "design-system",
+        "vite", "webpack", "spa", "pwa", "frontend-framework", "ui-components",
+        "solidjs", "astro", "remix",
     }),
     ("后端 / 框架", "backend", {
         "backend", "framework", "api", "rest", "graphql", "web-framework",
         "http", "server", "microservices", "grpc", "fastapi", "django",
+        "golang", "go", "nodejs", "spring", "spring-boot", "laravel", "rails",
+        "flask", "express", "gin", "nestjs", "fiber", "dotnet", "aspnet",
     }),
     ("数据库 / 存储", "database", {
         "database", "sql", "nosql", "postgresql", "mysql", "redis", "mongodb",
         "orm", "storage", "vector-database", "key-value", "time-series",
+        "sqlite", "clickhouse", "elasticsearch", "duckdb", "vector-search",
     }),
     ("DevOps / 基础设施", "devops", {
         "devops", "kubernetes", "docker", "ci", "cd", "infrastructure",
         "terraform", "monitoring", "observability", "deployment", "cloud",
+        "self-hosted", "selfhosted", "nginx", "reverse-proxy", "networking",
+        "vpn", "homelab", "raspberry-pi", "ansible", "helm", "prometheus",
+        "grafana",
     }),
     ("数据 / 大数据", "data", {
         "data", "data-science", "data-engineering", "etl", "analytics",
@@ -34,23 +54,29 @@ CATEGORY_RULES: list[tuple[str, str, set[str]]] = [
     }),
     ("移动开发", "mobile", {
         "android", "ios", "flutter", "react-native", "mobile", "swift",
-        "kotlin", "swiftui", "jetpack-compose",
+        "kotlin", "swiftui", "jetpack-compose", "android-app", "ios-app",
+        "harmony", "compose-multiplatform",
     }),
     ("安全", "security", {
         "security", "cryptography", "pentesting", "vulnerability", "infosec",
         "encryption", "authentication", "oauth", "firewall",
+        "malware", "exploit", "ctf", "reverse-engineering", "privacy",
     }),
     ("开发工具", "devtools", {
         "cli", "developer-tools", "editor", "ide", "terminal", "productivity",
         "vscode", "neovim", "git", "build-tool", "linter", "formatter",
+        "bash", "shell", "dotfiles", "vim", "emacs", "zsh", "tmux",
+        "command-line", "cli-app", "tui",
     }),
     ("游戏 / 图形", "game-graphics", {
         "game", "gamedev", "game-engine", "graphics", "rendering", "opengl",
-        "vulkan", "3d", "shader", "godot",
+        "vulkan", "3d", "shader", "godot", "unity", "unreal",
+        "game-development", "pixel-art", "raylib",
     }),
     ("区块链 / Web3", "blockchain", {
         "blockchain", "ethereum", "web3", "crypto", "smart-contracts",
-        "solidity", "defi", "bitcoin",
+        "solidity", "defi", "bitcoin", "nft", "dao", "zk", "zero-knowledge",
+        "wallet",
     }),
 ]
 

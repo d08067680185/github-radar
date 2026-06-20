@@ -29,8 +29,13 @@ export async function generateMetadata({
   const { owner } = await params;
   const org = await load(owner);
   if (!org) return { title: owner };
-  const title = `${owner} — ${org.project_count} 个上榜开源项目`;
-  const desc = `${owner} 名下共 ${org.project_count} 个上榜项目，总计 ${org.total_stars.toLocaleString()} Star。`;
+  const en = (await getLocale()) === "en";
+  const title = en
+    ? `${owner} — ${org.project_count} ranked open-source projects`
+    : `${owner} — ${org.project_count} 个上榜开源项目`;
+  const desc = en
+    ? `${owner} has ${org.project_count} ranked projects totaling ${org.total_stars.toLocaleString()} stars.`
+    : `${owner} 名下共 ${org.project_count} 个上榜项目，总计 ${org.total_stars.toLocaleString()} Star。`;
   return {
     title,
     description: desc,

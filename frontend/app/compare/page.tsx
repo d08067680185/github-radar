@@ -3,10 +3,19 @@ import { api } from "@/lib/api";
 import type { ProjectDetail } from "@/lib/types";
 import RadarChart, { RADAR_COLORS } from "@/components/RadarChart";
 
-export const metadata: Metadata = {
-  title: "项目对比",
-  description: "并排对比多个开源项目的综合评分与四个维度。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { getLocale } = await import("@/lib/i18n-server");
+  const en = (await getLocale()) === "en";
+  return en
+    ? {
+        title: "Compare projects",
+        description: "Compare multiple open-source projects side by side across the composite score and four dimensions.",
+      }
+    : {
+        title: "项目对比",
+        description: "并排对比多个开源项目的综合评分与四个维度。",
+      };
+}
 
 function fmt(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);

@@ -4,11 +4,20 @@ import { getLocale } from "@/lib/i18n-server";
 import { catName, catColor, CAT_ORDER } from "@/lib/i18n";
 
 export const revalidate = 3600;
-export const metadata: Metadata = {
-  title: "Insights · 开源生态数据洞察",
-  description:
-    "GitHub Radar 收录项目的全景数据：编程语言分布、技术领域分布，以及每个领域的旗舰开源项目。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const en = (await getLocale()) === "en";
+  return en
+    ? {
+        title: "Insights · Open-source ecosystem data",
+        description:
+          "A panorama of GitHub Radar's catalog: language distribution, technical-domain distribution, and the flagship open-source project of each field.",
+      }
+    : {
+        title: "Insights · 开源生态数据洞察",
+        description:
+          "GitHub Radar 收录项目的全景数据：编程语言分布、技术领域分布，以及每个领域的旗舰开源项目。",
+      };
+}
 
 const LANG_TOP = 15; // 语言榜展示前 N
 

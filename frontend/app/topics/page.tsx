@@ -4,11 +4,21 @@ import { getDict } from "@/lib/i18n-server";
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: "按 Topic 浏览开源项目",
-  description: "按 GitHub topic 标签发现优秀开源项目 —— 比领域分类更细的兴趣入口。",
-  alternates: { canonical: "/topics" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { getLocale } = await import("@/lib/i18n-server");
+  const en = (await getLocale()) === "en";
+  return en
+    ? {
+        title: "Browse open-source projects by topic",
+        description: "Discover great open-source projects by GitHub topic — a finer-grained entry point than domains.",
+        alternates: { canonical: "/topics" },
+      }
+    : {
+        title: "按 Topic 浏览开源项目",
+        description: "按 GitHub topic 标签发现优秀开源项目 —— 比领域分类更细的兴趣入口。",
+        alternates: { canonical: "/topics" },
+      };
+}
 
 // 字号随项目数缩放，做成 topic 云
 function sizeFor(count: number, max: number): number {

@@ -7,10 +7,19 @@ import Pagination from "@/components/Pagination";
 // 读 cookie（i18n）+ 动态数据，直接动态渲染
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "本季新星 — 近 90 天最火的新项目",
-  description: "近 90 天创建、star 增长最快的开源新项目，第一时间发现明日之星。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { getLocale } = await import("@/lib/i18n-server");
+  const en = (await getLocale()) === "en";
+  return en
+    ? {
+        title: "Rising stars — hottest new projects of the last 90 days",
+        description: "The fastest-growing open-source projects created in the last 90 days — spot tomorrow's stars first.",
+      }
+    : {
+        title: "本季新星 — 近 90 天最火的新项目",
+        description: "近 90 天创建、star 增长最快的开源新项目，第一时间发现明日之星。",
+      };
+}
 
 export default async function RisingPage({
   searchParams,

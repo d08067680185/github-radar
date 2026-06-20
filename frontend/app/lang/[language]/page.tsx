@@ -15,9 +15,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { language } = await params;
   const lang = decodeURIComponent(language);
+  const { getLocale } = await import("@/lib/i18n-server");
+  const en = (await getLocale()) === "en";
   return {
-    title: `${lang} 优秀开源项目榜`,
-    description: `综合评分排序的 ${lang} 优秀开源项目榜单，每日更新。`,
+    title: en ? `Top ${lang} open-source projects` : `${lang} 优秀开源项目榜`,
+    description: en
+      ? `Top ${lang} open-source projects ranked by composite score, updated daily.`
+      : `综合评分排序的 ${lang} 优秀开源项目榜单，每日更新。`,
   };
 }
 

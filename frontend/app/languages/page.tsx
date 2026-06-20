@@ -4,10 +4,19 @@ import { getDict } from "@/lib/i18n-server";
 import RankingList from "@/components/RankingList";
 
 export const revalidate = 3600;
-export const metadata: Metadata = {
-  title: "按语言浏览开源项目",
-  description: "按编程语言浏览优秀开源项目榜单：JavaScript、Python、Rust、Go、C++ 等，含各语言项目数。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { getLocale } = await import("@/lib/i18n-server");
+  const en = (await getLocale()) === "en";
+  return en
+    ? {
+        title: "Browse open-source projects by language",
+        description: "Browse top open-source projects by programming language: JavaScript, Python, Rust, Go, C++ and more, with per-language counts.",
+      }
+    : {
+        title: "按语言浏览开源项目",
+        description: "按编程语言浏览优秀开源项目榜单：JavaScript、Python、Rust、Go、C++ 等，含各语言项目数。",
+      };
+}
 
 const PREVIEW_COUNT = 10; // 前 N 个热门语言展示项目预览
 

@@ -6,10 +6,19 @@ import RankingList from "@/components/RankingList";
 import Pagination from "@/components/Pagination";
 import SearchAutocomplete from "@/components/SearchAutocomplete";
 
-export const metadata: Metadata = {
-  title: "搜索开源项目",
-  description: "按关键词、语言、领域、最低 star 数搜索优秀开源项目，支持多种排序。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { getLocale } = await import("@/lib/i18n-server");
+  const en = (await getLocale()) === "en";
+  return en
+    ? {
+        title: "Search open-source projects",
+        description: "Search top open-source projects by keyword, language, domain and minimum stars, with multiple sort options.",
+      }
+    : {
+        title: "搜索开源项目",
+        description: "按关键词、语言、领域、最低 star 数搜索优秀开源项目，支持多种排序。",
+      };
+}
 
 export default async function SearchPage({
   searchParams,

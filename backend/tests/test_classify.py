@@ -16,6 +16,18 @@ def test_description_fallback():
     assert classify([], "Go", "a kubernetes operator") == "devops"
 
 
+def test_learning_category():
+    # awesome 列表 / 教程 / 路线图 归「学习资源」
+    assert classify(["awesome", "go"], "Markdown", "A curated list") == "learning"
+    assert classify(["roadmap", "react"], "TypeScript", None) == "learning"
+    assert classify([], None, "Master programming by recreating tutorials") == "learning"
+
+
+def test_learning_priority_over_tech():
+    # awesome-go 这类列表应归学习而非后端（learning 规则在前）
+    assert classify(["awesome", "golang"], "Go", "Curated Go frameworks") == "learning"
+
+
 def test_language_fallback():
     # topics/描述都没命中 → 语言强信号
     assert classify([], "Solidity", None) == "blockchain"
@@ -27,7 +39,7 @@ def test_no_match_returns_none():
 
 def test_all_categories_shape():
     cats = all_categories()
-    assert len(cats) == 11
+    assert len(cats) == 12
     assert all("slug" in c and "name" in c for c in cats)
 
 

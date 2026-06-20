@@ -5,6 +5,12 @@ export const LOCALE_COOKIE = "ghradar_locale";
 
 export const dict = {
   zh: {
+    // 站点元数据（SEO：title/description/keywords，按 locale 出）
+    meta_title: "GitHub Radar — 发现优秀开源项目",
+    meta_desc: "GitHub Radar 用综合评分（增长趋势、维护活跃度、项目健康度、热度）发现优秀开源项目，提供综合榜与 Trending 榜，按语言与领域分类浏览。",
+    meta_og_desc: "用综合评分发现真正优秀的开源项目。",
+    meta_keywords: "开源项目, GitHub, Trending, 开源榜单, best open source",
+    nf_title: "404 — 没找到", nf_desc: "这个项目还没被 GitHub Radar 收录，或链接有误。", nf_back: "回到综合榜",
     // 导航
     nav_top: "综合榜", nav_trending: "Trending", nav_rising: "新星", nav_categories: "分类",
     nav_languages: "语言", nav_search: "搜索", nav_map: "星图", nav_insights: "洞察", nav_picks: "精选", nav_digest: "周报", nav_account: "我的", nav_about: "关于",
@@ -92,6 +98,11 @@ export const dict = {
     unsub_err: "退订失败，链接可能已失效。", unsub_invalid: "缺少退订令牌。",
   },
   en: {
+    meta_title: "GitHub Radar — Discover great open-source projects",
+    meta_desc: "GitHub Radar surfaces great open-source projects via a composite score (growth trend, maintenance activity, project health, popularity), with an Overall board and a Trending board, browsable by language and domain.",
+    meta_og_desc: "Discover truly great open-source projects via a composite score.",
+    meta_keywords: "open source, GitHub, trending, open source ranking, best open source projects",
+    nf_title: "404 — Not found", nf_desc: "This project isn't in GitHub Radar yet, or the link is broken.", nf_back: "Back to the top board",
     nav_top: "Top", nav_trending: "Trending", nav_rising: "Rising", nav_categories: "Categories",
     nav_languages: "Languages", nav_search: "Search", nav_map: "Galaxy", nav_insights: "Insights", nav_picks: "Picks", nav_digest: "Digest", nav_account: "Account", nav_about: "About",
     map_h: "🌌 Open Source Galaxy", map_sub: "A galaxy of top projects — bubble = project, size = stars, color = domain, clustered by domain. Hover for details, click to open, drag to move.",
@@ -175,6 +186,7 @@ export function getDictFor(locale: Locale): Dict {
 
 // 领域 slug → 本地化名称（后端 classify.py 只给中文名，前端按 locale 映射）
 const CAT_LABELS: Record<string, { zh: string; en: string }> = {
+  learning: { zh: "学习资源 / Awesome", en: "Learning / Awesome" },
   "ai-ml": { zh: "AI / 机器学习", en: "AI / ML" },
   "web-frontend": { zh: "Web 前端", en: "Web Frontend" },
   backend: { zh: "后端 / 框架", en: "Backend / Framework" },
@@ -197,7 +209,7 @@ export function catName(slug: string | null | undefined, locale: Locale, fallbac
 // 领域固定顺序（决定星系团在画布上沿圆周的角度位置）
 export const CAT_ORDER = [
   "ai-ml", "web-frontend", "backend", "database", "devops",
-  "data", "mobile", "security", "devtools", "game-graphics", "blockchain",
+  "data", "mobile", "security", "devtools", "game-graphics", "blockchain", "learning",
 ];
 
 // 领域 slug → 颜色（气泡星系 + 图例共用，11 色尽量区分）
@@ -213,6 +225,7 @@ export const CAT_COLORS: Record<string, string> = {
   devtools: "#a3a3a3",       // 灰
   "game-graphics": "#f97316",// 橙
   blockchain: "#eab308",     // 金
+  learning: "#84cc16",       // 柠檬绿（区别于 devops 的草绿）
 };
 export const CAT_FALLBACK_COLOR = "#94a3b8"; // 未分类/未知
 

@@ -24,11 +24,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { week } = await params;
   const d = await load(week);
-  if (!d) return { title: "周报" };
-  const title = `每周精选 · ${week}`;
+  const en = (await getLocale()) === "en";
+  if (!d) return { title: en ? "Digest" : "周报" };
+  const title = en ? `Weekly picks · ${week}` : `每周精选 · ${week}`;
   return {
     title,
-    description: `GitHub Radar ${week} 当周精选 ${d.item_count} 个上升最快的开源项目。`,
+    description: en
+      ? `GitHub Radar's ${d.item_count} fastest-rising open-source projects for the week of ${week}.`
+      : `GitHub Radar ${week} 当周精选 ${d.item_count} 个上升最快的开源项目。`,
     alternates: { canonical: `/digest/${week}` },
   };
 }

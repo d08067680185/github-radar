@@ -6,10 +6,19 @@ import MoversList from "@/components/MoversList";
 import Pagination from "@/components/Pagination";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = {
-  title: "Trending 榜 — 正在火的开源项目",
-  description: "按近期 star 增长趋势排序，支持今日/本周/本月时间窗，发现正在快速崛起的开源项目。",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { getLocale } = await import("@/lib/i18n-server");
+  const en = (await getLocale()) === "en";
+  return en
+    ? {
+        title: "Trending — open-source projects on the rise",
+        description: "Ranked by recent star-growth trend with today/week/month windows — discover rapidly rising open-source projects.",
+      }
+    : {
+        title: "Trending 榜 — 正在火的开源项目",
+        description: "按近期 star 增长趋势排序，支持今日/本周/本月时间窗，发现正在快速崛起的开源项目。",
+      };
+}
 
 const WINDOWS = [
   { key: "all", days: 0 },

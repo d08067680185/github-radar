@@ -18,25 +18,26 @@ const THEME_INIT = `(function(){try{var t=localStorage.getItem('ghradar_theme');
 
 const SITE_URL = process.env.SITE_URL || "http://localhost:3000";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: "GitHub Radar — 发现优秀开源项目",
-    template: "%s | GitHub Radar",
-  },
-  description:
-    "GitHub Radar 用综合评分（增长趋势、维护活跃度、项目健康度、热度）发现优秀开源项目，提供综合榜与 Trending 榜，按语言与领域分类浏览。",
-  keywords: ["开源项目", "GitHub", "Trending", "开源榜单", "best open source"],
-  openGraph: {
-    type: "website",
-    siteName: "GitHub Radar",
-    title: "GitHub Radar — 发现优秀开源项目",
-    description: "用综合评分发现真正优秀的开源项目。",
-  },
-  alternates: {
-    types: { "application/rss+xml": "/feed/new.xml" },
-  },
-};
+// 元数据按 locale 出（中间件已据 /en 路径写入 locale 头，getDict 读得到），
+// 让英文页的 title/description/OG 也是英文 —— 英文 SEO 的关键。
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getDictFor(locale);
+  const rss = locale === "en" ? "/feed/new.xml?lang=en" : "/feed/new.xml";
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: t.meta_title, template: "%s | GitHub Radar" },
+    description: t.meta_desc,
+    keywords: t.meta_keywords.split(",").map((s) => s.trim()),
+    openGraph: {
+      type: "website",
+      siteName: "GitHub Radar",
+      title: t.meta_title,
+      description: t.meta_og_desc,
+    },
+    alternates: { types: { "application/rss+xml": rss } },
+  };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
@@ -78,7 +79,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <DataFreshness />
                   <a href="/topics">{t.nav_topics}</a>
                   <a href="/about">{t.nav_about}</a>
-                  <a href="/feed/new.xml">{t.rss}</a>
+                  <a href={locale === "en" ? "/feed/new.xml?lang=en" : "/feed/new.xml"}>{t.rss}</a>
                 </div>
               </footer>
               <CompareBar />
