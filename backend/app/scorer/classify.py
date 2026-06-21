@@ -95,8 +95,17 @@ def _tokenize(text: str) -> set[str]:
     return set(t for t in _NORMALIZE.split(text.lower()) if t)
 
 
-def classify(topics: list[str], language: str | None, description: str | None) -> str | None:
-    """返回 category slug，无法判定返回 None。"""
+def classify(
+    topics: list[str],
+    language: str | None,
+    description: str | None,
+    summary: str | None = None,
+) -> str | None:
+    """返回 category slug，无法判定返回 None。
+
+    信号优先级：topics / 描述（最强）> AI 英文简介（次强，关键词精准）> 语言强信号（兜底）。
+    `summary` 传 AI 生成的英文简介（readme_summary_en）—— 对没有 topics、描述也含糊的项目最有效。
+    """
     topic_set = {t.lower() for t in (topics or [])}
     desc_tokens = _tokenize(description or "")
 
@@ -107,6 +116,13 @@ def classify(topics: list[str], language: str | None, description: str | None) -
         # 描述关键词命中
         if desc_tokens & keywords:
             return slug
+
+    # AI 英文简介兜底（比语言兜底精准）：很多无 topics 的项目靠简介关键词归类
+    summary_tokens = _tokenize(summary or "")
+    if summary_tokens:
+        for name, slug, keywords in CATEGORY_RULES:
+            if summary_tokens & keywords:
+                return slug
 
     if language and language in _LANG_FALLBACK:
         return _LANG_FALLBACK[language]

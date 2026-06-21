@@ -33,6 +33,17 @@ def test_language_fallback():
     assert classify([], "Solidity", None) == "blockchain"
 
 
+def test_summary_fallback():
+    # 无 topics、描述含糊，但 AI 英文简介含领域关键词 → 据简介归类
+    assert classify([], "Go", "a tool", summary="A self-hosted Kubernetes dashboard") == "devops"
+
+
+def test_summary_lower_priority_than_description():
+    # 描述已命中就不看简介（简介只是兜底）
+    assert classify([], "Python", "a pytorch library",
+                    summary="a web frontend toolkit") == "ai-ml"
+
+
 def test_no_match_returns_none():
     assert classify([], "Brainfuck", "something totally unrelated zzz") is None
 

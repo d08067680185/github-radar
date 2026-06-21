@@ -111,7 +111,7 @@ def compute_all(db: Session) -> int:
         p.health_score = round(health, 2)
         p.heat_score = round(heat, 2)
         p.score = round(total, 2)
-        p.category = classify(p.topics, p.language, p.description)
+        p.category = classify(p.topics, p.language, p.description, p.readme_summary_en)
 
     db.add(CollectLog(task="score", status="ok", repos_affected=len(projects)))
     db.commit()
