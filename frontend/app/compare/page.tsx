@@ -91,7 +91,11 @@ export default async function ComparePage({
         />
       </div>
 
-      <div className="cmp-grid" style={{ gridTemplateColumns: `160px repeat(${projects.length}, 1fr)` }}>
+      <div className="cmp-scroll">
+      <div className="cmp-grid" style={{
+        gridTemplateColumns: `minmax(120px, 160px) repeat(${projects.length}, minmax(120px, 1fr))`,
+        minWidth: `${120 + projects.length * 120}px`,
+      }}>
         {/* 头行 */}
         <div className="cmp-cell cmp-head" />
         {projects.map((p) => (
@@ -116,6 +120,7 @@ export default async function ComparePage({
         {projects.map((p) => <div className="cmp-cell" key={p.full_name}>{p.license || "-"}</div>)}
         <div className="cmp-cell cmp-rowlabel">{en ? "Category" : "领域"}</div>
         {projects.map((p) => <div className="cmp-cell" key={p.full_name}>{catName(p.category, locale, p.category_name) || "-"}</div>)}
+      </div>
       </div>
     </>
   );

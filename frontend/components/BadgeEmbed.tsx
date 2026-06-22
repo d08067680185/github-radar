@@ -43,10 +43,11 @@ export default function BadgeEmbed({
           { k: "md" as const, label: t.badge_copy_md, code: md },
           { k: "html" as const, label: t.badge_copy_html, code: html },
         ].map((row) => (
-          <div key={row.k} style={{ display: "flex", gap: 8, alignItems: "stretch" }}>
+          <div key={row.k} style={{ display: "flex", gap: 8, alignItems: "stretch", minWidth: 0 }}>
             <code
               style={{
                 flex: 1,
+                minWidth: 0,  // 允许 flex 子项收缩，否则 nowrap 长串会撑爆容器（不滚动）
                 fontSize: 12,
                 padding: "8px 10px",
                 background: "var(--surface-2)",
