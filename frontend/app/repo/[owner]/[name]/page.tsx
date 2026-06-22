@@ -59,14 +59,15 @@ export default async function RepoPage({
   params: Promise<{ owner: string; name: string }>;
 }) {
   const { owner, name } = await params;
-  const data = await load(owner, name);
+  // 4 个后端请求并行（原本串行，extras 还会同步打 GitHub，串行时阻塞整页）
+  const [data, similar, standing, extras] = await Promise.all([
+    load(owner, name),
+    api.similar(owner, name, 6).catch(() => []),
+    api.standing(owner, name).catch(() => null),
+    api.extras(owner, name).catch(() => ({ readme_excerpt: null, latest_release: null })),
+  ]);
   if (!data) notFound();
   const { project, history } = data;
-  const similar = await api.similar(owner, name, 6).catch(() => []);
-  const standing = await api.standing(owner, name).catch(() => null);
-  const extras = await api
-    .extras(owner, name)
-    .catch(() => ({ readme_excerpt: null, latest_release: null }));
   const t = await getDict();
   const locale = await getLocale();
 

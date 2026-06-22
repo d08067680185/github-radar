@@ -16,14 +16,21 @@ router = APIRouter(prefix="/api", tags=["projects"])
 
 @router.get("/projects/{owner}/{name}", response_model=ProjectDetailOut)
 def project_detail(owner: str, name: str, db: Session = Depends(get_db)):
-    p = db.execute(
-        select(Project).where(Project.full_name == f"{owner}/{name}")
-    ).scalar_one_or_none()
-    if p is None:
+    """项目详情（高频页，走缓存 1h；score/pipeline 后随 invalidate_all 失效）。"""
+    def loader():
+        p = db.execute(
+            select(Project).where(Project.full_name == f"{owner}/{name}")
+        ).scalar_one_or_none()
+        if p is None:
+            return None  # 负缓存：不存在也缓存，避免反复直查 DB
+        out = ProjectDetailOut.model_validate(p)
+        out.category_name = category_name(p.category)
+        return out.model_dump()
+
+    data = cached("detail", {"o": owner, "n": name}, loader, ttl=3600)
+    if data is None:
         raise HTTPException(404, "project not found")
-    out = ProjectDetailOut.model_validate(p)
-    out.category_name = category_name(p.category)
-    return out
+    return data
 
 
 @router.get("/projects/{owner}/{name}/standing", response_model=StandingOut)

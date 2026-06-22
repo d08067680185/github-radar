@@ -15,8 +15,12 @@ from app.schemas import (
     ProjectOut, ShareSettingsIn, ShareSettingsOut, PublicListOut, PublicListItem,
 )
 from app.auth import get_current_user
+from app.ratelimit import rate_limit
 
 router = APIRouter(tags=["share"])
+
+# 防滥用：同一 IP 每分钟最多改 20 次分享设置（正常用户远低于此）
+_share_rl = rate_limit("share", limit=20, window_sec=60)
 
 
 def _fav_count(db: Session, user_id: int) -> int:
@@ -33,7 +37,7 @@ def get_share(user: User = Depends(get_current_user), db: Session = Depends(get_
     )
 
 
-@router.put("/api/me/share", response_model=ShareSettingsOut)
+@router.put("/api/me/share", response_model=ShareSettingsOut, dependencies=[Depends(_share_rl)])
 def update_share(
     body: ShareSettingsIn,
     user: User = Depends(get_current_user),
