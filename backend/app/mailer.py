@@ -43,10 +43,16 @@ def _send_html(to_email: str, subject: str, html: str) -> bool:
     msg["To"] = to_email
     msg.attach(MIMEText(html, "html", "utf-8"))
     try:
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
-            server.starttls()
-            server.login(settings.smtp_user, settings.smtp_password)
-            server.send_message(msg)
+        # 端口 465 = 隐式 SSL（SMTP_SSL）；其余（587/25）= STARTTLS 升级。
+        if settings.smtp_port == 465:
+            with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=20) as server:
+                server.login(settings.smtp_user, settings.smtp_password)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=20) as server:
+                server.starttls()
+                server.login(settings.smtp_user, settings.smtp_password)
+                server.send_message(msg)
         logger.info("已发送邮件至 %s（%s）", to_email, subject)
         return True
     except Exception as e:  # noqa: BLE001
