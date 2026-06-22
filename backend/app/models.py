@@ -130,6 +130,12 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
+    # 公开收藏集分享：整个收藏夹可发布成一个公开页（tags 作分区、note 作点评）。
+    # slug 一经生成即稳定（关闭再开不换链接）；public_listed 控制是否对外可见。
+    public_slug: Mapped[str | None] = mapped_column(String(32), unique=True, index=True, nullable=True)
+    public_listed: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    public_title: Mapped[str | None] = mapped_column(String(120), nullable=True)
+
     favorites: Mapped[list["Favorite"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )

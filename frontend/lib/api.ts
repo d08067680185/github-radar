@@ -1,6 +1,6 @@
 import type {
   Project, ProjectDetail, SnapshotPoint, Category, Stats, MapNode, MapTimeline, Org, Mover,
-  DigestArchiveListItem, DigestArchiveDetail, Standing,
+  DigestArchiveListItem, DigestArchiveDetail, Standing, PublicList,
 } from "./types";
 
 const API_BASE = process.env.API_BASE || "http://127.0.0.1:8077";
@@ -99,6 +99,8 @@ export const api = {
     getPaged(`/api/topic/${encodeURIComponent(topic)}${qs(p)}`),
   standing: (owner: string, name: string) =>
     get<Standing>(`/api/projects/${owner}/${name}/standing`),
+  publicList: (slug: string) =>
+    get<PublicList>(`/api/list/${encodeURIComponent(slug)}`, 300),
   digestArchive: () => get<DigestArchiveListItem[]>(`/api/digest/archive`),
   digestArchiveDetail: (week: string) =>
     get<DigestArchiveDetail>(`/api/digest/archive/${encodeURIComponent(week)}`),

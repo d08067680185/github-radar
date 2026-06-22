@@ -171,3 +171,31 @@ class FavoriteOut(BaseModel):
     tags: list[str] = []
     note: str | None = None
     created_at: datetime
+
+
+class ShareSettingsIn(BaseModel):
+    """更新公开分享设置：listed 控制是否对外可见，title 可选。"""
+    listed: bool
+    title: str | None = None
+
+
+class ShareSettingsOut(BaseModel):
+    """当前用户的公开分享设置（slug 一经生成即稳定）。"""
+    listed: bool = False
+    slug: str | None = None
+    title: str | None = None
+    count: int = 0  # 收藏数，提示用户列表非空
+
+
+class PublicListItem(BaseModel):
+    """公开列表条目（只读，含点评，不含收藏时间等私有元信息）。"""
+    project: ProjectOut
+    tags: list[str] = []
+    note: str | None = None
+
+
+class PublicListOut(BaseModel):
+    """公开收藏集页：标题 + 分组前的条目（前端按 tags 分区渲染）。"""
+    title: str
+    count: int
+    items: list[PublicListItem] = []

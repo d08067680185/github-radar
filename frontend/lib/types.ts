@@ -64,6 +64,25 @@ export interface Standing {
   top: Project[];
 }
 
+export interface ShareSettings {
+  listed: boolean;
+  slug: string | null;
+  title: string | null;
+  count: number;
+}
+
+export interface PublicListItem {
+  project: Project;
+  tags: string[];
+  note: string | null;
+}
+
+export interface PublicList {
+  title: string;
+  count: number;
+  items: PublicListItem[];
+}
+
 export interface Favorite {
   project: Project;
   tags: string[];
