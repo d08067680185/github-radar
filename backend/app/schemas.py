@@ -35,6 +35,16 @@ class ProjectDetailOut(ProjectOut):
     category_name: str | None = None
 
 
+class StandingOut(BaseModel):
+    """项目在其所属领域内的相对定位（排名/百分位 + 领域 Top）。"""
+    category: str | None = None
+    category_name: str | None = None
+    rank: int = 0
+    total: int = 0
+    percentile: float = 0  # 超过该领域百分之多少的项目
+    top: list[ProjectOut] = []
+
+
 class SnapshotPoint(BaseModel):
     date: date
     stars: int

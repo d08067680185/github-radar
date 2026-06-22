@@ -2,12 +2,12 @@
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, desc, case, or_
+from sqlalchemy import select, desc, case, or_, func
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models import Project, ProjectSnapshot
-from app.schemas import ProjectDetailOut, SnapshotPoint, ProjectOut
+from app.schemas import ProjectDetailOut, SnapshotPoint, ProjectOut, StandingOut
 from app.scorer.classify import category_name
 from app.cache import cached
 
@@ -24,6 +24,44 @@ def project_detail(owner: str, name: str, db: Session = Depends(get_db)):
     out = ProjectDetailOut.model_validate(p)
     out.category_name = category_name(p.category)
     return out
+
+
+@router.get("/projects/{owner}/{name}/standing", response_model=StandingOut)
+def project_standing(owner: str, name: str, db: Session = Depends(get_db)):
+    """项目在其所属领域内的相对定位：排名 / 总数 / 百分位 + 领域 Top 5。
+
+    用现有评分数据，让用户一眼看出项目在同类中的地位。无领域则返回空（前端隐藏）。
+    """
+    p = db.execute(
+        select(Project).where(Project.full_name == f"{owner}/{name}")
+    ).scalar_one_or_none()
+    if p is None:
+        raise HTTPException(404, "project not found")
+    if not p.category:
+        return StandingOut()
+
+    def loader():
+        cat = p.category
+        base = (Project.category == cat) & (Project.is_archived.is_(False))
+        total = db.scalar(select(func.count()).where(base)) or 0
+        # 竞赛排名：领域内 score 严格更高者数 + 1（同分并列）
+        higher = db.scalar(select(func.count()).where(base, Project.score > p.score)) or 0
+        rank = higher + 1
+        rows = db.execute(
+            select(Project).where(base).order_by(desc(Project.score)).limit(5)
+        ).scalars().all()
+        top = [ProjectOut.model_validate(r).model_dump() for r in rows]
+        percentile = round((total - rank) / total * 100, 1) if total else 0.0
+        return StandingOut(
+            category=cat,
+            category_name=category_name(cat),
+            rank=rank,
+            total=total,
+            percentile=percentile,
+            top=top,
+        ).model_dump()
+
+    return cached("standing", {"o": owner, "n": name}, loader, ttl=3600)
 
 
 @router.get("/projects/{owner}/{name}/extras")

@@ -12,6 +12,7 @@ import CompareButton from "@/components/CompareButton";
 import ShareButton from "@/components/ShareButton";
 import BadgeEmbed from "@/components/BadgeEmbed";
 import RadarChart from "@/components/RadarChart";
+import StandingCard from "@/components/StandingCard";
 
 export const revalidate = 3600;
 
@@ -62,6 +63,7 @@ export default async function RepoPage({
   if (!data) notFound();
   const { project, history } = data;
   const similar = await api.similar(owner, name, 6).catch(() => []);
+  const standing = await api.standing(owner, name).catch(() => null);
   const extras = await api
     .extras(owner, name)
     .catch(() => ({ readme_excerpt: null, latest_release: null }));
@@ -165,6 +167,10 @@ export default async function RepoPage({
             <a className="topic-tag" key={topic} href={`/topic/${encodeURIComponent(topic)}`}>{topic}</a>
           ))}
         </div>
+      )}
+
+      {standing?.category && (
+        <StandingCard standing={standing} currentFullName={project.full_name} locale={locale} t={t} />
       )}
 
       <h2 style={{ fontSize: 18, marginTop: 28 }}>{t.trend_h}</h2>

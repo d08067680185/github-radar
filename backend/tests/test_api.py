@@ -61,6 +61,30 @@ def test_search_filters(client, make_project):
     assert [p["full_name"] for p in out2] == ["a/rs"]
 
 
+def test_standing_rank_and_percentile(client, make_project):
+    # 同领域 4 个项目，按 score 竞赛排名
+    make_project(full_name="a/top", category="ai-ml", score=90)
+    make_project(full_name="a/second", category="ai-ml", score=70)
+    make_project(full_name="a/third", category="ai-ml", score=50)
+    make_project(full_name="a/last", category="ai-ml", score=10)
+    # 别的领域不应计入
+    make_project(full_name="b/other", category="web-frontend", score=99)
+
+    out = client.get("/api/projects/a/second/standing").json()
+    assert out["category"] == "ai-ml"
+    assert out["rank"] == 2
+    assert out["total"] == 4
+    assert out["percentile"] == 50.0  # (4-2)/4*100
+    assert [p["full_name"] for p in out["top"]] == ["a/top", "a/second", "a/third", "a/last"]
+
+
+def test_standing_no_category(client, make_project):
+    make_project(full_name="a/uncat", category=None)
+    out = client.get("/api/projects/a/uncat/standing").json()
+    assert out["category"] is None
+    assert out["top"] == []
+
+
 def test_search_keyword(client, make_project):
     make_project(full_name="a/kube", description="a kubernetes tool")
     make_project(full_name="a/other", description="something else")

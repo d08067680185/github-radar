@@ -55,6 +55,15 @@ export interface Mover extends Project {
   window_days: number;
 }
 
+export interface Standing {
+  category: string | null;
+  category_name: string | null;
+  rank: number;
+  total: number;
+  percentile: number;
+  top: Project[];
+}
+
 export interface Favorite {
   project: Project;
   tags: string[];

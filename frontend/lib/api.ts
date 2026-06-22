@@ -1,6 +1,6 @@
 import type {
   Project, ProjectDetail, SnapshotPoint, Category, Stats, MapNode, MapTimeline, Org, Mover,
-  DigestArchiveListItem, DigestArchiveDetail,
+  DigestArchiveListItem, DigestArchiveDetail, Standing,
 } from "./types";
 
 const API_BASE = process.env.API_BASE || "http://127.0.0.1:8077";
@@ -97,6 +97,8 @@ export const api = {
   topics: (limit = 60) => get<Category[]>(`/api/topics?limit=${limit}`),
   topicPaged: (topic: string, p: { sort?: string; limit?: number; offset?: number } = {}) =>
     getPaged(`/api/topic/${encodeURIComponent(topic)}${qs(p)}`),
+  standing: (owner: string, name: string) =>
+    get<Standing>(`/api/projects/${owner}/${name}/standing`),
   digestArchive: () => get<DigestArchiveListItem[]>(`/api/digest/archive`),
   digestArchiveDetail: (week: string) =>
     get<DigestArchiveDetail>(`/api/digest/archive/${encodeURIComponent(week)}`),
