@@ -18,7 +18,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const list = await load(slug);
-  if (!list) return { title: "List not found" };
+  // 列表不存在/未公开：渲染 not-found UI（状态码在 force-dynamic 流式下为 200），
+  // 用 noindex 确保这类 soft-404 不被搜索引擎索引。
+  if (!list) return { title: "List not found", robots: { index: false } };
   const en = (await getLocale()) === "en";
   const desc = en
     ? `A curated collection of ${list.count} open-source projects on GitHub Radar.`
