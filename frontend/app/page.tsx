@@ -1,6 +1,8 @@
 import { api, PER_PAGE } from "@/lib/api";
 import { getDict } from "@/lib/i18n-server";
 import RankingList from "@/components/RankingList";
+import JsonLd from "@/components/JsonLd";
+import { itemListLd } from "@/lib/jsonld";
 import Hero from "@/components/Hero";
 import Movers from "@/components/Movers";
 import SubscribeBox from "@/components/SubscribeBox";
@@ -37,8 +39,9 @@ export default async function HomePage({
   };
   return (
     <>
+      {page === 1 && <JsonLd data={jsonLd} />}
       {page === 1 && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <JsonLd data={itemListLd(items, { name: t.home_h, baseUrl: SITE })} />
       )}
       {page === 1 && <Hero />}
       {page === 1 && <Movers movers={movers} />}

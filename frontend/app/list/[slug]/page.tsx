@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import { projectSummary } from "@/lib/format";
+import JsonLd from "@/components/JsonLd";
+import { collectionLd } from "@/lib/jsonld";
 import type { PublicList, PublicListItem } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -64,9 +66,16 @@ export default async function PublicListPage({
   const t = await getDict();
   const locale = await getLocale();
   const groups = groupByTag(list.items, t.list_ungrouped);
+  const SITE = process.env.SITE_URL || "https://radar.mxzshs.com";
+  const ld = collectionLd(list.title, list.items.map((it) => it.project), {
+    name: list.title,
+    baseUrl: SITE,
+    url: `${SITE}/list/${slug}`,
+  });
 
   return (
     <>
+      <JsonLd data={ld} />
       <h1 className="page-title">📚 {list.title}</h1>
       <p className="page-sub">{t.list_count(list.count)}</p>
 

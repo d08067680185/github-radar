@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { api, PER_PAGE } from "@/lib/api";
 import RankingList from "@/components/RankingList";
+import JsonLd from "@/components/JsonLd";
+import { itemListLd } from "@/lib/jsonld";
 import Pagination from "@/components/Pagination";
 import SortSelect from "@/components/SortSelect";
 
@@ -61,8 +63,10 @@ export default async function CategoryPage({
   const locale = await getLocale();
   const en = locale === "en";
   const name = catName(slug, locale, cat.name);
+  const SITE = process.env.SITE_URL || "https://radar.mxzshs.com";
   return (
     <>
+      <JsonLd data={itemListLd(items, { name, baseUrl: SITE, startRank: (page - 1) * PER_PAGE })} />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <h1 className="page-title">{name}</h1>
         <SortSelect current={sort} />
