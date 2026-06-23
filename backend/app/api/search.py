@@ -1,5 +1,7 @@
 """搜索 + 多条件筛选接口。"""
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, Query, Response, BackgroundTasks
+
+from app.analytics import track, normalize_query, KIND_SEARCH
 from sqlalchemy import select, desc, or_, func
 from sqlalchemy.orm import Session
 
@@ -86,6 +88,7 @@ def suggest(
 @router.get("/search", response_model=list[ProjectOut])
 def search(
     response: Response,
+    background: BackgroundTasks,
     db: Session = Depends(get_db),
     q: str | None = Query(None, max_length=100, description="关键词：匹配名称/描述/topics"),
     language: str | None = Query(None),
@@ -95,6 +98,11 @@ def search(
     limit: int = Query(50, le=200),
     offset: int = Query(0, ge=0),
 ):
+    # 仅当有关键词、且是首页（offset=0，避免翻页重复计数）时记录搜索
+    if q and offset == 0:
+        nq = normalize_query(q)
+        if nq:
+            background.add_task(track, KIND_SEARCH, nq)
     base = _apply_filters(
         select(Project).where(Project.is_archived.is_(False)), q, language, category, min_stars
     )

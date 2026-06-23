@@ -64,6 +64,11 @@ export interface Standing {
   top: Project[];
 }
 
+export interface TopSearch {
+  query: string;
+  count: number;
+}
+
 export interface ShareSettings {
   listed: boolean;
   slug: string | null;

@@ -1,6 +1,6 @@
 import type {
   Project, ProjectDetail, SnapshotPoint, Category, Stats, MapNode, MapTimeline, Org, Mover,
-  DigestArchiveListItem, DigestArchiveDetail, Standing, PublicList,
+  DigestArchiveListItem, DigestArchiveDetail, Standing, PublicList, TopSearch,
 } from "./types";
 
 const API_BASE = process.env.API_BASE || "http://127.0.0.1:8077";
@@ -99,6 +99,10 @@ export const api = {
     getPaged(`/api/topic/${encodeURIComponent(topic)}${qs(p)}`),
   standing: (owner: string, name: string) =>
     get<Standing>(`/api/projects/${owner}/${name}/standing`),
+  topSearches: (days = 7, limit = 8) =>
+    get<TopSearch[]>(`/api/analytics/top-searches?days=${days}&limit=${limit}`, 600),
+  topRepos: (days = 7, limit = 6) =>
+    get<Project[]>(`/api/analytics/top-repos?days=${days}&limit=${limit}`, 600),
   publicList: (slug: string) =>
     get<PublicList>(`/api/list/${encodeURIComponent(slug)}`, 300),
   digestArchive: () => get<DigestArchiveListItem[]>(`/api/digest/archive`),

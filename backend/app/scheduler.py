@@ -33,6 +33,13 @@ def daily_pipeline():
         compute_all(db)
         prune_stale(db)
         try:
+            from app.analytics import prune_old
+            n = prune_old(db, days=90)
+            if n:
+                logger.info("清理过期分析事件 %d 条", n)
+        except Exception:
+            logger.exception("分析事件清理出错（不影响其余流水线）")
+        try:
             summarize_backfill(db)  # best-effort：无 key/余额不足时内部已优雅跳过
         except Exception:
             logger.exception("AI 简介步骤出错（不影响其余流水线）")

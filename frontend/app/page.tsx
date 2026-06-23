@@ -5,6 +5,7 @@ import JsonLd from "@/components/JsonLd";
 import { itemListLd } from "@/lib/jsonld";
 import Hero from "@/components/Hero";
 import Movers from "@/components/Movers";
+import TrendingNow from "@/components/TrendingNow";
 import SubscribeBox from "@/components/SubscribeBox";
 import Pagination from "@/components/Pagination";
 import SortSelect from "@/components/SortSelect";
@@ -45,6 +46,7 @@ export default async function HomePage({
       )}
       {page === 1 && <Hero />}
       {page === 1 && <Movers movers={movers} />}
+      {page === 1 && <TrendingNow />}
       <div className="section-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <h2 className="page-title">{t.home_h}</h2>
         <SortSelect current={sort} />

@@ -1,7 +1,7 @@
 """项目详情 + star 历史趋势 + 相似项目接口。"""
 from datetime import date, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy import select, desc, case, or_, func
 from sqlalchemy.orm import Session
 
@@ -10,13 +10,21 @@ from app.models import Project, ProjectSnapshot
 from app.schemas import ProjectDetailOut, SnapshotPoint, ProjectOut, StandingOut
 from app.scorer.classify import category_name
 from app.cache import cached
+from app.analytics import track, KIND_REPO_VIEW
 
 router = APIRouter(prefix="/api", tags=["projects"])
 
 
 @router.get("/projects/{owner}/{name}", response_model=ProjectDetailOut)
-def project_detail(owner: str, name: str, db: Session = Depends(get_db)):
+def project_detail(
+    owner: str, name: str,
+    background: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     """项目详情（高频页，走缓存 1h；score/pipeline 后随 invalidate_all 失效）。"""
+    # 记录浏览（缓存外，命中缓存也计数）
+    background.add_task(track, KIND_REPO_VIEW, f"{owner}/{name}")
+
     def loader():
         p = db.execute(
             select(Project).where(Project.full_name == f"{owner}/{name}")

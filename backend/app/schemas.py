@@ -35,6 +35,12 @@ class ProjectDetailOut(ProjectOut):
     category_name: str | None = None
 
 
+class TopSearchOut(BaseModel):
+    """热门搜索词聚合项。"""
+    query: str
+    count: int
+
+
 class StandingOut(BaseModel):
     """项目在其所属领域内的相对定位（排名/百分位 + 领域 Top）。"""
     category: str | None = None

@@ -161,3 +161,22 @@ class Favorite(Base):
 
     user: Mapped["User"] = relationship(back_populates="favorites")
     project: Mapped["Project"] = relationship()
+
+
+class AnalyticsEvent(Base):
+    """隐私友好的轻量分析事件：只记 类型 + 键 + 时间，无 cookie / IP / 任何 PII。
+
+    kind: 'search'（key=归一化查询词）/ 'repo_view'（key=full_name）。
+    用于聚合「热门搜索 / 最多人看的项目」，旧事件由 pipeline 定期清理。
+    """
+    __tablename__ = "analytics_events"
+    __table_args__ = (
+        Index("idx_analytics_kind_created", "kind", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    kind: Mapped[str] = mapped_column(String(16))
+    key: Mapped[str] = mapped_column(String(200))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )
