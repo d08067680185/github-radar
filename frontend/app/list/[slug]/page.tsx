@@ -30,6 +30,7 @@ export async function generateMetadata({
     description: desc,
     alternates: { canonical: `/list/${slug}` },
     openGraph: { title: list.title, description: desc, type: "website" },
+    twitter: { card: "summary_large_image", title: list.title, description: desc },
   };
 }
 
