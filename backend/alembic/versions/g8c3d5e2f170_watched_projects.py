@@ -1,7 +1,7 @@
 """watched_projects table
 
 Revision ID: g8c3d5e2f170
-Revises: f7a2b9d4c510
+Revises: c3e8b1f4a920
 Create Date: 2026-06-30
 
 """
@@ -9,7 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = "g8c3d5e2f170"
-down_revision = "f7a2b9d4c510"
+down_revision = "c3e8b1f4a920"
 branch_labels = None
 depends_on = None
 
