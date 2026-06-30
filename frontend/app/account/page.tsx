@@ -8,6 +8,8 @@ import type { Project, Favorite } from "@/lib/types";
 import RankingList from "@/components/RankingList";
 import FavoritesManager from "@/components/FavoritesManager";
 import ShareSettingsPanel from "@/components/ShareSettings";
+import WatchList from "@/components/WatchList";
+import APIKeysPanel from "@/components/APIKeysPanel";
 
 function AuthForm() {
   const { login, register } = useAuth();
@@ -105,8 +107,14 @@ function Dashboard() {
       <h2 style={{ fontSize: 18, marginTop: 30 }}>{t.myFavs}</h2>
       {token && <FavoritesManager token={token} />}
 
+      <h2 style={{ fontSize: 18, marginTop: 32 }}>{t.watch_tab}</h2>
+      {token && <WatchList token={token} />}
+
       <h2 style={{ fontSize: 18, marginTop: 32 }}>{t.share_h}</h2>
       {token && <ShareSettingsPanel token={token} />}
+
+      <h2 style={{ fontSize: 18, marginTop: 32 }}>API Keys</h2>
+      {token && <APIKeysPanel token={token} />}
 
       <h2 style={{ fontSize: 18, marginTop: 32 }}>{t.recForYou}</h2>
       <RankingList projects={recommend} metric="score" />

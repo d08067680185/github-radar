@@ -60,6 +60,44 @@ test("详情页显示领域定位模块", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /领域定位/ })).toBeVisible();
 });
 
+test("分类页正常加载且显示领域列表", async ({ page }) => {
+  await page.goto("/categories");
+  await expect(page.getByRole("heading", { name: /按领域浏览/ })).toBeVisible();
+  await expect(page.locator('a[href^="/category/"]').first()).toBeVisible();
+});
+
+test("Topics 云正常渲染", async ({ page }) => {
+  await page.goto("/topics");
+  await expect(page.getByRole("heading", { name: /Topic/ })).toBeVisible();
+  await expect(page.locator('a[href^="/topic/"]').first()).toBeVisible();
+});
+
+test("组织聚合页加载", async ({ page }) => {
+  await page.goto("/org/microsoft");
+  await expect(page.getByRole("heading", { name: /microsoft/i })).toBeVisible();
+  await expect(page.locator('a[href^="/repo/"]').first()).toBeVisible();
+});
+
+test("周报存档列表加载", async ({ page }) => {
+  await page.goto("/digest");
+  await expect(page.getByRole("heading", { name: /周报/ })).toBeVisible();
+});
+
+test("语言统计页加载且显示语言列表", async ({ page }) => {
+  await page.goto("/languages");
+  await expect(page.getByRole("heading", { name: /语言/ })).toBeVisible();
+  await expect(page.locator('a[href^="/lang/"]').first()).toBeVisible();
+});
+
+test("英文版 locale 路由正确", async ({ page }) => {
+  await page.goto("/en/about");
+  const title = await page.title();
+  expect(title).toMatch(/Radar/i);
+  // 导航链接应带 /en 前缀
+  const navLinks = await page.locator('nav a[href^="/en/"]').count();
+  expect(navLinks).toBeGreaterThan(0);
+});
+
 test("公开收藏集：发布后公开页可访问", async ({ page, request }) => {
   // 经 /proxy-api 走后端：注册 → 收藏 → 发布 → 访问公开页
   const email = `e2e_${Date.now()}@test.com`;

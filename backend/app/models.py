@@ -163,6 +163,46 @@ class Favorite(Base):
     project: Mapped["Project"] = relationship()
 
 
+class APIKey(Base):
+    """开发者 API Key（用于第三方接入）。key 以 bcrypt 哈希存储，明文仅展示一次。"""
+    __tablename__ = "api_keys"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    key_hash: Mapped[str] = mapped_column(String(255), unique=True)
+    key_prefix: Mapped[str] = mapped_column(String(16))
+    name: Mapped[str] = mapped_column(String(80))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    user: Mapped["User"] = relationship()
+
+
+class WatchedProject(Base):
+    """用户关注的项目，有新 release 时收邮件通知。"""
+    __tablename__ = "watched_projects"
+    __table_args__ = (
+        UniqueConstraint("user_id", "project_id", name="uq_watch_user_project"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    project_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("projects.id", ondelete="CASCADE")
+    )
+    last_notified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    user: Mapped["User"] = relationship()
+    project: Mapped["Project"] = relationship()
+
+
 class AnalyticsEvent(Base):
     """隐私友好的轻量分析事件：只记 类型 + 键 + 时间，无 cookie / IP / 任何 PII。
 

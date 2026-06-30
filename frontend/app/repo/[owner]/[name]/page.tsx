@@ -9,6 +9,7 @@ import RankingList from "@/components/RankingList";
 import StarTrend from "@/components/StarTrend";
 import GrowthBadges from "@/components/GrowthBadges";
 import FavoriteButton from "@/components/FavoriteButton";
+import WatchButton from "@/components/WatchButton";
 import CompareButton from "@/components/CompareButton";
 import ShareButton from "@/components/ShareButton";
 import BadgeEmbed from "@/components/BadgeEmbed";
@@ -99,6 +100,7 @@ export default async function RepoPage({
           <ShareButton fullName={project.full_name} score={project.score} />
           <CompareButton fullName={project.full_name} />
           <FavoriteButton fullName={project.full_name} />
+          <WatchButton fullName={project.full_name} />
         </div>
       </div>
       <a href={localeHref(`/org/${project.owner}`, locale)} style={{ fontSize: 13, color: "var(--muted)", display: "inline-block", margin: "0 0 8px" }}>

@@ -77,12 +77,24 @@ def weekly_digest():
         db.close()
 
 
+def check_releases():
+    """检查关注项目的新 release 并发邮件通知。"""
+    import asyncio
+    from app.notifier import check_release_notifications
+    try:
+        asyncio.run(check_release_notifications())
+    except Exception:
+        logger.exception("发版通知检查异常")
+
+
 def start_scheduler() -> BackgroundScheduler:
     scheduler = BackgroundScheduler(timezone="UTC")
     # 每天 UTC 02:00 跑（避开 GitHub 高峰）
     scheduler.add_job(daily_pipeline, "cron", hour=2, minute=0, id="daily_pipeline")
     # 每周一 UTC 03:00 发周报（流水线之后，数据已最新）
     scheduler.add_job(weekly_digest, "cron", day_of_week="mon", hour=3, minute=0, id="weekly_digest")
+    # 每天 UTC 06:00 检查发版通知（流水线完成后 4 小时）
+    scheduler.add_job(check_releases, "cron", hour=6, minute=0, id="check_releases")
     scheduler.start()
-    logger.info("调度器已启动：每日 UTC 02:00 流水线 + 每周一 03:00 周报")
+    logger.info("调度器已启动：每日 UTC 02:00 流水线 + 每周一 03:00 周报 + 每日 06:00 发版通知")
     return scheduler
