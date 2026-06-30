@@ -57,6 +57,7 @@ export const dict = {
     sort_score: "综合评分", sort_growth: "增长趋势", sort_stars: "Star 数", sort_activity: "活跃度",
     sort_forks: "Fork 数", sort_updated: "最近更新", sort_newest: "最新创建",
     sortBy: "排序：", noStar: "不限 Star", searchBtn: "搜索",
+    anyYear: "不限年份", createdAfter: "创建于",
     search_empty: "输入关键词或选择筛选条件开始搜索。试试这些：",
     resultsFound: (n: number) => `找到 ${n.toLocaleString()} 个结果`,
     // 详情
@@ -157,6 +158,7 @@ export const dict = {
     sort_score: "Score", sort_growth: "Growth", sort_stars: "Stars", sort_activity: "Activity",
     sort_forks: "Forks", sort_updated: "Updated", sort_newest: "Newest",
     sortBy: "Sort: ", noStar: "Any stars", searchBtn: "Search",
+    anyYear: "Any year", createdAfter: "Created",
     search_empty: "Enter a keyword or pick filters to start. Try these:",
     resultsFound: (n: number) => `${n.toLocaleString()} results`,
     badge_h: "🛡️ Embed score badge", badge_sub: "Add this project's GitHub Radar score to your README:",

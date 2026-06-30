@@ -42,6 +42,7 @@ export interface SearchParams {
   language?: string;
   category?: string;
   min_stars?: number;
+  created_after?: string;
   sort?: "score" | "growth" | "stars" | "activity";
   limit?: number;
   offset?: number;

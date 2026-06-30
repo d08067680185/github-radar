@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth, authFetch } from "@/lib/auth";
 import { useLocale } from "@/lib/i18n-client";
+import { localeHref } from "@/lib/locale-link";
 import type { Project, Favorite } from "@/lib/types";
 import RankingList from "@/components/RankingList";
 import FavoritesManager from "@/components/FavoritesManager";
@@ -10,7 +11,7 @@ import ShareSettingsPanel from "@/components/ShareSettings";
 
 function AuthForm() {
   const { login, register } = useAuth();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,7 +58,7 @@ function AuthForm() {
         </button>
         {mode === "login" && (
           <p style={{ textAlign: "center", margin: "8px 0 0" }}>
-            <a href="/account/forgot" style={{ fontSize: 13, color: "var(--muted)" }}>{t.forgotPwd}</a>
+            <a href={localeHref("/account/forgot", locale)} style={{ fontSize: 13, color: "var(--muted)" }}>{t.forgotPwd}</a>
           </p>
         )}
       </div>

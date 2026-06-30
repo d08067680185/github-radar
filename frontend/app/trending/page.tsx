@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { api, PER_PAGE } from "@/lib/api";
-import { getDict } from "@/lib/i18n-server";
+import { getDict, getLocale } from "@/lib/i18n-server";
+import { localeHref } from "@/lib/locale-link";
 import RankingList from "@/components/RankingList";
 import MoversList from "@/components/MoversList";
 import Pagination from "@/components/Pagination";
@@ -32,6 +33,7 @@ export default async function TrendingPage({
 }: {
   searchParams: Promise<{ page?: string; w?: string }>;
 }) {
+  const locale = await getLocale();
   const t = await getDict();
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
@@ -50,7 +52,7 @@ export default async function TrendingPage({
       {tabs.map((tab) => (
         <a
           key={tab.key}
-          href={tab.key === "all" ? "/trending" : `/trending?w=${tab.key}`}
+          href={localeHref(tab.key === "all" ? "/trending" : `/trending?w=${tab.key}`, locale)}
           className={`chip${w === tab.key ? " active" : ""}`}
         >
           {tab.label}

@@ -8,6 +8,7 @@ import {
 } from "d3-force";
 import type { MapNode, MapTimeline } from "@/lib/types";
 import { useLocale } from "@/lib/i18n-client";
+import { localeHref } from "@/lib/locale-link";
 import { catName, catColor, langColor, CAT_ORDER, CAT_FALLBACK_COLOR } from "@/lib/i18n";
 
 type SizeMetric = "stars" | "score" | "growth";
@@ -570,10 +571,10 @@ export default function BubbleGalaxy({
           <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "min(300px, 82%)", background: "var(--surface)", borderLeft: "1px solid var(--border)", boxShadow: "-8px 0 24px rgba(0,0,0,.2)", padding: 18, overflowY: "auto", zIndex: 30 }}>
             <button onClick={() => setPanel(null)} aria-label="close"
               style={{ position: "absolute", top: 10, right: 12, background: "none", border: "none", color: "var(--muted)", fontSize: 20, cursor: "pointer" }}>×</button>
-            <a className="repo-name" href={`/repo/${panel.full_name}`} style={{ display: "block", marginRight: 20, wordBreak: "break-all" }}>{panel.full_name}</a>
+            <a className="repo-name" href={localeHref(`/repo/${panel.full_name}`, locale)} style={{ display: "block", marginRight: 20, wordBreak: "break-all" }}>{panel.full_name}</a>
             <div className="meta" style={{ margin: "8px 0" }}>
               {panel.language && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><i style={{ width: 9, height: 9, borderRadius: "50%", background: langColor(panel.language), display: "inline-block" }} />{panel.language}</span>}
-              {panel.category && <a className="chip" href={`/category/${panel.category}`}>{catName(panel.category, locale, panel.category)}</a>}
+              {panel.category && <a className="chip" href={localeHref(`/category/${panel.category}`, locale)}>{catName(panel.category, locale, panel.category)}</a>}
             </div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, margin: "10px 0" }}>
               <span style={{ fontSize: 30, fontWeight: 800, color: "var(--green)" }}>{Math.round(panel.score)}</span>
@@ -589,7 +590,7 @@ export default function BubbleGalaxy({
                 </div>
               ))}
             </div>
-            <a className="chip active" href={`/repo/${panel.full_name}`} style={{ display: "inline-block", marginTop: 6 }}>{t.map_detail}</a>
+            <a className="chip active" href={localeHref(`/repo/${panel.full_name}`, locale)} style={{ display: "inline-block", marginTop: 6 }}>{t.map_detail}</a>
           </div>
         )}
       </div>

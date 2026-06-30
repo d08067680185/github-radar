@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { api } from "@/lib/api";
 import type { ProjectDetail } from "@/lib/types";
 import RadarChart, { RADAR_COLORS } from "@/components/RadarChart";
+import { localeHref } from "@/lib/locale-link";
+import ComparePrintBtn from "@/components/ComparePrintBtn";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { getLocale } = await import("@/lib/i18n-server");
@@ -61,10 +63,10 @@ export default async function ComparePage({
         <h1 className="page-title">{en ? "Compare Projects" : "项目对比"}</h1>
         <p className="page-sub">
           {en
-            ? "No projects selected. Click “⇄ Compare” on a list or detail page (up to 4), then come back."
+            ? 'No projects selected. Click "⇄ Compare" on a list or detail page (up to 4), then come back.'
             : "还没有选择项目。在榜单或详情页点「⇄ 对比」加入项目（最多 4 个）后再来这里。"}
         </p>
-        <a className="chip" href="/">{t.backToList}</a>
+        <a className="chip" href={localeHref("/", locale)}>{t.backToList}</a>
       </>
     );
   }
@@ -72,10 +74,20 @@ export default async function ComparePage({
   const best: Record<string, number> = {};
   for (const d of DIMS) best[d.key] = Math.max(...projects.map((p) => Number(p[d.key])));
 
+  // 每个项目的胜出维度
+  const winsByProject = projects.map((p) =>
+    projects.length > 1
+      ? DIMS.filter((d) => Number(p[d.key]) === best[d.key]).map((d) => d.label)
+      : []
+  );
+
   return (
     <>
       <h1 className="page-title">{en ? "⇄ Compare Projects" : "⇄ 项目对比"}</h1>
-      <p className="page-sub">{en ? "Green highlights the best in each dimension." : "绿色高亮为该维度表现最优的项目。"}</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", margin: "0 0 6px" }}>
+        <p className="page-sub" style={{ margin: 0 }}>{en ? "Green highlights the best in each dimension." : "绿色高亮为该维度表现最优的项目。"}</p>
+        <ComparePrintBtn label={en ? "Download / Print" : "打印 / 下载"} />
+      </div>
 
       <div style={{ margin: "8px 0 24px" }}>
         <RadarChart
@@ -97,16 +109,31 @@ export default async function ComparePage({
         minWidth: `${120 + projects.length * 120}px`,
       }}>
         {/* 头行 */}
-        <div className="cmp-cell cmp-head" />
+        <div className="cmp-cell cmp-head cmp-head-sticky" />
         {projects.map((p) => (
           <div className="cmp-cell cmp-head" key={p.full_name}>
-            <a className="repo-name" href={`/repo/${p.full_name}`}>{p.full_name}</a>
+            <a className="repo-name" href={localeHref(`/repo/${p.full_name}`, locale)}>{p.full_name}</a>
             <div className="meta" style={{ marginTop: 6 }}>
               {p.language && <span><span className="lang-dot" />{p.language}</span>}
               <span>⭐ {fmt(p.stars)}</span>
             </div>
           </div>
         ))}
+
+        {/* 胜者汇总行 */}
+        {projects.length > 1 && (
+          <>
+            <div className="cmp-cell cmp-rowlabel">{en ? "Best at" : "胜出维度"}</div>
+            {winsByProject.map((wins, i) => (
+              <div className="cmp-cell" key={projects[i].full_name}>
+                {wins.length > 0
+                  ? <div className="cmp-wins">{wins.map((w) => <div key={w}>{"✓ "}{w}</div>)}</div>
+                  : <span style={{ color: "var(--faint)", fontSize: 13 }}>{"—"}</span>
+                }
+              </div>
+            ))}
+          </>
+        )}
 
         {/* 维度行 */}
         {DIMS.map((d) => (

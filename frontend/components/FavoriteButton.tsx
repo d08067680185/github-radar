@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useAuth, authFetch } from "@/lib/auth";
 import { useLocale } from "@/lib/i18n-client";
+import { localeHref } from "@/lib/locale-link";
 
 export default function FavoriteButton({ fullName }: { fullName: string }) {
   const { token } = useAuth();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [fav, setFav] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -20,7 +21,7 @@ export default function FavoriteButton({ fullName }: { fullName: string }) {
 
   if (!token) {
     return (
-      <a className="chip" href="/account">{t.loginToFav}</a>
+      <a className="chip" href={localeHref("/account", locale)}>{t.loginToFav}</a>
     );
   }
 

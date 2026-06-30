@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useLocale } from "@/lib/i18n-client";
+import { localeHref } from "@/lib/locale-link";
 
 export default function UnsubscribePage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [state, setState] = useState<"busy" | "ok" | "err" | "invalid">("busy");
 
   useEffect(() => {
@@ -33,7 +34,7 @@ export default function UnsubscribePage() {
     <div style={{ maxWidth: 480, margin: "60px auto", textAlign: "center" }}>
       <h1 className="page-title">{t.unsub_h}</h1>
       <p className="page-sub" style={{ fontSize: 16 }}>{msg}</p>
-      <a href="/" className="chip" style={{ marginTop: 16, display: "inline-block" }}>
+      <a href={localeHref("/", locale)} className="chip" style={{ marginTop: 16, display: "inline-block" }}>
         {t.backToList}
       </a>
     </div>

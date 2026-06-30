@@ -15,6 +15,8 @@ CATEGORY_RULES: list[tuple[str, str, set[str]]] = [
         "study-plan", "cheatsheet", "cheatsheets", "education", "educational",
         "course", "courses", "self-taught", "learning-resources",
         "free-programming-books", "algorithm", "algorithms",
+        "exercises", "practice", "problems", "solutions", "notes", "examples",
+        "cookbook", "reference", "snippets", "guide", "guides",
     }),
     ("AI / 机器学习", "ai-ml", {
         "ai", "machine-learning", "deep-learning", "llm", "llms", "gpt", "nlp",
@@ -23,23 +25,29 @@ CATEGORY_RULES: list[tuple[str, str, set[str]]] = [
         "langchain", "openai", "chatgpt", "generative-ai", "genai",
         "stable-diffusion", "computer-vision", "mlops", "fine-tuning",
         "prompt-engineering", "llamaindex", "huggingface",
+        "embeddings", "finetuning", "multimodal", "attention", "agentic",
+        "llm-agent", "vector-store", "retrieval", "reranker",
     }),
     ("Web 前端", "web-frontend", {
         "frontend", "react", "vue", "angular", "svelte", "css", "ui",
         "component", "tailwind", "nextjs", "web-components", "design-system",
         "vite", "webpack", "spa", "pwa", "frontend-framework", "ui-components",
         "solidjs", "astro", "remix",
+        "javascript", "typescript", "html", "sass", "storybook", "animation",
     }),
     ("后端 / 框架", "backend", {
         "backend", "framework", "api", "rest", "graphql", "web-framework",
         "http", "server", "microservices", "grpc", "fastapi", "django",
         "golang", "go", "nodejs", "spring", "spring-boot", "laravel", "rails",
         "flask", "express", "gin", "nestjs", "fiber", "dotnet", "aspnet",
+        "microservice", "websocket", "middleware", "proxy", "gateway",
+        "rpc", "restful", "api-server", "web-server", "http-server",
     }),
     ("数据库 / 存储", "database", {
         "database", "sql", "nosql", "postgresql", "mysql", "redis", "mongodb",
         "orm", "storage", "vector-database", "key-value", "time-series",
         "sqlite", "clickhouse", "elasticsearch", "duckdb", "vector-search",
+        "cache", "caching", "object-storage", "graph-database", "timeseries",
     }),
     ("DevOps / 基础设施", "devops", {
         "devops", "kubernetes", "docker", "ci", "cd", "infrastructure",
@@ -47,44 +55,64 @@ CATEGORY_RULES: list[tuple[str, str, set[str]]] = [
         "self-hosted", "selfhosted", "nginx", "reverse-proxy", "networking",
         "vpn", "homelab", "raspberry-pi", "ansible", "helm", "prometheus",
         "grafana",
+        "gitops", "alerting", "tracing", "logging", "incident", "cicd",
+        "continuous-integration", "continuous-deployment", "k8s", "container",
     }),
     ("数据 / 大数据", "data", {
         "data", "data-science", "data-engineering", "etl", "analytics",
         "spark", "kafka", "pandas", "data-pipeline", "bigdata",
+        "data-analysis", "data-visualization", "notebook", "jupyter",
+        "airflow", "dbt", "warehouse", "lakehouse",
     }),
     ("移动开发", "mobile", {
         "android", "ios", "flutter", "react-native", "mobile", "swift",
         "kotlin", "swiftui", "jetpack-compose", "android-app", "ios-app",
         "harmony", "compose-multiplatform",
+        "dart", "cross-platform", "xamarin", "maui",
     }),
     ("安全", "security", {
         "security", "cryptography", "pentesting", "vulnerability", "infosec",
         "encryption", "authentication", "oauth", "firewall",
         "malware", "exploit", "ctf", "reverse-engineering", "privacy",
+        "cve", "pentest", "zero-trust", "authorization", "2fa", "audit",
+        "devsecops", "secrets", "certificate", "tls", "ssl",
     }),
     ("开发工具", "devtools", {
         "cli", "developer-tools", "editor", "ide", "terminal", "productivity",
         "vscode", "neovim", "git", "build-tool", "linter", "formatter",
         "bash", "shell", "dotfiles", "vim", "emacs", "zsh", "tmux",
         "command-line", "cli-app", "tui",
+        "debugger", "profiler", "benchmark", "benchmarks", "repl",
+        "lsp", "language-server", "plugin", "extension", "code-generator",
+        "static-analysis", "code-quality",
     }),
     ("游戏 / 图形", "game-graphics", {
         "game", "gamedev", "game-engine", "graphics", "rendering", "opengl",
         "vulkan", "3d", "shader", "godot", "unity", "unreal",
         "game-development", "pixel-art", "raylib",
+        "webgl", "threejs", "animation", "simulation", "physics-engine",
     }),
     ("区块链 / Web3", "blockchain", {
         "blockchain", "ethereum", "web3", "crypto", "smart-contracts",
         "solidity", "defi", "bitcoin", "nft", "dao", "zk", "zero-knowledge",
         "wallet",
+        "layer2", "evm", "polkadot", "substrate", "move", "aptos", "sui",
     }),
 ]
 
-# 语言强信号兜底（topics/描述都没命中时）
+# 语言强信号兜底（topics/描述/AI简介都没命中时）
 _LANG_FALLBACK = {
     "Solidity": "blockchain",
     "Cuda": "ai-ml",
     "GLSL": "game-graphics",
+    # 新增：移动端语言
+    "Swift": "mobile",
+    "Kotlin": "mobile",
+    "Dart": "mobile",
+    "Objective-C": "mobile",
+    # 新增：后端/工具
+    "C#": "backend",
+    "Rust": "devtools",
 }
 
 _SLUG_TO_NAME = {slug: name for name, slug, _ in CATEGORY_RULES}

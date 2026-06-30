@@ -16,6 +16,17 @@ interface Quality {
   stale_projects: number;
   archived: number;
   last_runs: Record<string, { at: string; status: string } | null>;
+  unclassified_pct: number;
+  ai_summary_coverage: number;
+  snapshot_coverage_7d: number;
+  active_subscribers: number;
+  new_subscribers_7d: number;
+}
+interface AnalyticsSummary {
+  total_searches_7d: number;
+  total_views_7d: number;
+  top_searches: { key: string; count: number }[];
+  top_repos: { key: string; count: number }[];
 }
 interface Status {
   ok: boolean; db: boolean; redis: boolean;
@@ -29,6 +40,7 @@ export default function AdminPage() {
   const [input, setInput] = useState("");
   const [logs, setLogs] = useState<LogRow[] | null>(null);
   const [quality, setQuality] = useState<Quality | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
   const [err, setErr] = useState("");
   const [pipelineMsg, setPipelineMsg] = useState("");
@@ -42,9 +54,10 @@ export default function AdminPage() {
     setErr("");
     const headers = { "X-Admin-Token": tk };
     try {
-      const [lr, qr, sr] = await Promise.all([
+      const [lr, qr, ar, sr] = await Promise.all([
         fetch("/proxy-admin/logs?limit=50", { headers }),
         fetch("/proxy-admin/quality", { headers }),
+        fetch("/proxy-admin/analytics-summary", { headers }),
         fetch("/proxy-status"),
       ]);
       if (lr.status === 401 || lr.status === 403) {
@@ -55,6 +68,7 @@ export default function AdminPage() {
       }
       setLogs(await lr.json());
       setQuality(await qr.json());
+      setAnalytics(ar.ok ? await ar.json() : null);
       setStatus(await sr.json());
     } catch {
       setErr("加载失败，请重试");
@@ -117,6 +131,7 @@ export default function AdminPage() {
       </p>
       {err && <p style={{ color: "var(--danger, #ef4444)" }}>{err}</p>}
 
+      {/* 服务健康 */}
       {status && (
         <section style={{ display: "flex", gap: 16, flexWrap: "wrap", margin: "16px 0" }}>
           <StatCard label="服务" value={status.ok ? "✅ 正常" : "❌ 异常"} />
@@ -127,18 +142,66 @@ export default function AdminPage() {
         </section>
       )}
 
+      {/* 分析概览 */}
+      {analytics && (
+        <section style={{ margin: "20px 0" }}>
+          <h2 style={{ fontSize: 16, margin: "0 0 10px" }}>📈 近7天分析</h2>
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
+            <StatCard label="搜索次数" value={String(analytics.total_searches_7d)} />
+            <StatCard label="项目浏览" value={String(analytics.total_views_7d)} />
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+            <div>
+              <h3 style={{ fontSize: 14, margin: "0 0 8px", color: "var(--muted)" }}>🔍 热门搜索词</h3>
+              {analytics.top_searches.length === 0
+                ? <p style={{ fontSize: 13, color: "var(--faint)" }}>暂无数据</p>
+                : analytics.top_searches.map((s) => (
+                  <BarRow key={s.key} label={s.key} count={s.count} max={analytics.top_searches[0].count} />
+                ))
+              }
+            </div>
+            <div>
+              <h3 style={{ fontSize: 14, margin: "0 0 8px", color: "var(--muted)" }}>👀 最多人看的项目</h3>
+              {analytics.top_repos.length === 0
+                ? <p style={{ fontSize: 13, color: "var(--faint)" }}>暂无数据</p>
+                : analytics.top_repos.map((r) => (
+                  <BarRow key={r.key} label={r.key} count={r.count} max={analytics.top_repos[0].count} />
+                ))
+              }
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 数据质量 */}
       {quality && (
         <>
-          <section style={{ display: "flex", gap: 16, flexWrap: "wrap", margin: "16px 0" }}>
-            <StatCard label="收录项目" value={String(quality.total_projects)} />
-            <StatCard label="僵尸(>30天)" value={String(quality.stale_projects)} />
-            <StatCard label="已归档" value={String(quality.archived)} />
-            {Object.entries(quality.score_distribution).map(([k, v]) => (
-              <StatCard key={k} label={`评分 ${k}`} value={String(v)} />
-            ))}
+          <section style={{ margin: "20px 0" }}>
+            <h2 style={{ fontSize: 16, margin: "0 0 10px" }}>🗄️ 数据概览</h2>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
+              <StatCard label="收录项目" value={String(quality.total_projects)} />
+              <StatCard label="僵尸(>30天)" value={String(quality.stale_projects)} />
+              <StatCard label="已归档" value={String(quality.archived)} />
+              <StatCard label="活跃订阅" value={String(quality.active_subscribers)} />
+              <StatCard label="近7天新增订阅" value={`+${quality.new_subscribers_7d}`} />
+              {Object.entries(quality.score_distribution).map(([k, v]) => (
+                <StatCard key={k} label={`评分 ${k}`} value={String(v)} />
+              ))}
+            </div>
           </section>
+
+          {/* 数据质量进度条 */}
+          <section style={{ margin: "20px 0" }}>
+            <h2 style={{ fontSize: 16, margin: "0 0 10px" }}>📊 数据质量</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <ProgressRow label="AI简介覆盖率" pct={quality.ai_summary_coverage} />
+              <ProgressRow label="快照覆盖率(≥7天)" pct={quality.snapshot_coverage_7d} />
+              <ProgressRow label="分类覆盖率" pct={100 - quality.unclassified_pct} warn={quality.unclassified_pct > 15} />
+            </div>
+          </section>
+
           <section style={{ margin: "16px 0" }}>
-            <h2 style={{ fontSize: 16, margin: "12px 0 6px" }}>各任务最近运行</h2>
+            <h2 style={{ fontSize: 16, margin: "0 0 6px" }}>各任务最近运行</h2>
             <table className="admin-table" style={{ width: "100%", fontSize: 13 }}>
               <tbody>
                 {Object.entries(quality.last_runs).map(([task, run]) => (
@@ -197,6 +260,36 @@ function StatCard({ label, value }: { label: string; value: string }) {
     }}>
       <div style={{ fontSize: 12, opacity: .7 }}>{label}</div>
       <div style={{ fontSize: 18, fontWeight: 600 }}>{value}</div>
+    </div>
+  );
+}
+
+function BarRow({ label, count, max }: { label: string; count: number; max: number }) {
+  const pct = max > 0 ? Math.round((count / max) * 100) : 0;
+  return (
+    <div style={{ marginBottom: 6 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 2 }}>
+        <span style={{ color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "70%" }}>{label}</span>
+        <span style={{ color: "var(--muted)", flexShrink: 0 }}>{count}</span>
+      </div>
+      <div style={{ height: 5, borderRadius: 3, background: "var(--surface-2)", overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: "var(--accent)", borderRadius: 3, transition: "width .3s" }} />
+      </div>
+    </div>
+  );
+}
+
+function ProgressRow({ label, pct, warn }: { label: string; pct: number; warn?: boolean }) {
+  const color = warn ? "#f59e0b" : pct >= 80 ? "var(--green)" : "var(--accent)";
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
+        <span>{label}</span>
+        <span style={{ color, fontWeight: 600 }}>{pct.toFixed(1)}%</span>
+      </div>
+      <div style={{ height: 8, borderRadius: 4, background: "var(--surface-2)", overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${Math.min(100, pct)}%`, background: color, borderRadius: 4, transition: "width .3s" }} />
+      </div>
     </div>
   );
 }

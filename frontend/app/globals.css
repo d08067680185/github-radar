@@ -317,11 +317,20 @@ a.topic-tag:hover { color: var(--text); border-color: var(--accent); }
 .cmp-grid { display: grid; gap: 1px; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: var(--radius); overflow: hidden; margin-top: 16px; }
 .cmp-cell { background: var(--surface); padding: 14px 16px; }
 .cmp-head { background: var(--surface-2); }
-.cmp-rowlabel { background: var(--surface-2); font-size: 13px; color: var(--muted); font-weight: 600; display: flex; align-items: center; }
+.cmp-rowlabel { background: var(--surface-2); font-size: 13px; color: var(--muted); font-weight: 600; display: flex; align-items: center; position: sticky; left: 0; z-index: 1; }
 .cmp-val { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
 .cmp-val.accent { color: var(--accent); }
 .cmp-val.best { color: var(--green); }
 .cmp-val.best::after { content: " ★"; font-size: 12px; }
+.cmp-head-sticky { position: sticky; left: 0; z-index: 2; }
+.cmp-wins { font-size: 11px; color: var(--green); font-weight: 600; line-height: 1.6; }
+.cmp-print-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 14px; font-size: 13px; color: var(--muted); cursor: pointer; margin-bottom: 8px; }
+.cmp-print-btn:hover { color: var(--text); border-color: var(--accent); }
+@media print {
+  nav, footer, .cmp-print-btn, .CompareBar { display: none !important; }
+  .cmp-scroll { overflow: visible; }
+  .cmp-grid { break-inside: avoid; }
+}
 
 /* 趋势增长徽章 */
 .growth-badges { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0 4px; }

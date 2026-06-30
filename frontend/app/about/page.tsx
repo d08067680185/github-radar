@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getLocale } from "@/lib/i18n-server";
+import { localeHref } from "@/lib/locale-link";
 
 export const metadata: Metadata = {
   title: "About · Scoring",
@@ -33,8 +34,8 @@ export default async function AboutPage() {
         dimsH: "The Four Dimensions",
         boardsH: "Two Boards",
         boards: <>
-          <a href="/">Top Projects</a> ranks by composite score — for <b>consistently solid</b> projects;{" "}
-          <a href="/trending">Trending</a> ranks by growth — for <b>rising stars</b>.
+          <a href={localeHref("/", "en")}>Top Projects</a> ranks by composite score — for <b>consistently solid</b> projects;{" "}
+          <a href={localeHref("/trending", "en")}>Trending</a> ranks by growth — for <b>rising stars</b>.
         </>,
         dataH: "Data Source & Updates",
         data: "Data comes from GitHub's official GraphQL API via adaptive sharded collection across star ranges. A daily snapshot (star/fork/issue) powers the growth trend — the longer the history, the more accurate.",
@@ -48,8 +49,8 @@ export default async function AboutPage() {
         dimsH: "四个维度",
         boardsH: "双榜设计",
         boards: <>
-          <a href="/">综合优质榜</a> 按综合分排序，适合找<b>长期靠谱</b>的项目；
-          <a href="/trending">Trending 榜</a> 按增长趋势排序，适合抓<b>正在崛起</b>的新星。
+          <a href={localeHref("/", "zh")}>综合优质榜</a> 按综合分排序，适合找<b>长期靠谱</b>的项目；
+          <a href={localeHref("/trending", "zh")}>Trending 榜</a> 按增长趋势排序，适合抓<b>正在崛起</b>的新星。
         </>,
         dataH: "数据来源与更新",
         data: "数据来自 GitHub 官方 GraphQL API，通过自适应分片采集覆盖各 star 区间。系统每日记录一次快照(star/fork/issue)，用于计算增长趋势——历史数据越久，趋势越准。",

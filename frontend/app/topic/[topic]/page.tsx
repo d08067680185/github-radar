@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { api, PER_PAGE } from "@/lib/api";
-import { getDict } from "@/lib/i18n-server";
+import { getDict, getLocale } from "@/lib/i18n-server";
+import { localeHref } from "@/lib/locale-link";
 import RankingList from "@/components/RankingList";
 import JsonLd from "@/components/JsonLd";
 import { itemListLd } from "@/lib/jsonld";
@@ -37,6 +38,7 @@ export default async function TopicPage({
 }) {
   const { topic } = await params;
   const tp = decodeURIComponent(topic);
+  const locale = await getLocale();
   const t = await getDict();
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
@@ -51,7 +53,7 @@ export default async function TopicPage({
   return (
     <>
       <JsonLd data={itemListLd(items, { name: `#${tp}`, baseUrl: SITE, startRank: (page - 1) * PER_PAGE })} />
-      <a href="/topics" style={{ fontSize: 13, color: "var(--muted)" }}>← {t.nav_topics}</a>
+      <a href={localeHref("/topics", locale)} style={{ fontSize: 13, color: "var(--muted)" }}>← {t.nav_topics}</a>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <h1 className="page-title">{t.topic_h(tp)}</h1>
         <SortSelect current={sort} />

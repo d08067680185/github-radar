@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import { catName } from "@/lib/i18n";
+import { localeHref } from "@/lib/locale-link";
 import RankingList from "@/components/RankingList";
 import SortSelect from "@/components/SortSelect";
 
@@ -67,7 +68,7 @@ export default async function OrgPage({
 
   return (
     <>
-      <a href="/" style={{ fontSize: 13, color: "var(--muted)" }}>{t.backToList}</a>
+      <a href={localeHref("/", locale)} style={{ fontSize: 13, color: "var(--muted)" }}>{t.backToList}</a>
       <h1 className="page-title">{owner}</h1>
       <p className="page-sub">{t.org_by}</p>
 

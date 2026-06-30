@@ -20,7 +20,7 @@ _SORT_FIELDS = {
 }
 
 
-def _apply_filters(stmt, q, language, category, min_stars):
+def _apply_filters(stmt, q, language, category, min_stars, created_after=None):
     if q:
         pattern = f"%{q.lower()}%"
         stmt = stmt.where(
@@ -36,6 +36,8 @@ def _apply_filters(stmt, q, language, category, min_stars):
         stmt = stmt.where(Project.category == category)
     if min_stars:
         stmt = stmt.where(Project.stars >= min_stars)
+    if created_after:
+        stmt = stmt.where(Project.created_at >= f"{created_after}-01-01")
     return stmt
 
 
@@ -94,6 +96,7 @@ def search(
     language: str | None = Query(None),
     category: str | None = Query(None),
     min_stars: int = Query(0, ge=0),
+    created_after: str | None = Query(None, pattern=r"^\d{4}$"),
     sort: str = Query("score", pattern="^(score|growth|stars|activity)$"),
     limit: int = Query(50, le=200),
     offset: int = Query(0, ge=0),
@@ -104,12 +107,12 @@ def search(
         if nq:
             background.add_task(track, KIND_SEARCH, nq)
     base = _apply_filters(
-        select(Project).where(Project.is_archived.is_(False)), q, language, category, min_stars
+        select(Project).where(Project.is_archived.is_(False)), q, language, category, min_stars, created_after
     )
     total = db.execute(
         _apply_filters(
             select(func.count()).select_from(Project).where(Project.is_archived.is_(False)),
-            q, language, category, min_stars,
+            q, language, category, min_stars, created_after,
         )
     ).scalar_one()
     response.headers["X-Total-Count"] = str(total)

@@ -2,13 +2,14 @@
 
 import type { Mover } from "@/lib/types";
 import { useLocale } from "@/lib/i18n-client";
+import { localeHref } from "@/lib/locale-link";
 
 function fmt(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 }
 
 export default function Movers({ movers }: { movers: Mover[] }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   if (!movers.length) return null;
   const days = movers[0].window_days;
 
@@ -29,7 +30,7 @@ export default function Movers({ movers }: { movers: Mover[] }) {
         {movers.map((m) => (
           <a
             key={m.full_name}
-            href={`/repo/${m.full_name}`}
+            href={localeHref(`/repo/${m.full_name}`, locale)}
             style={{
               background: "var(--surface)",
               border: "1px solid var(--border)",

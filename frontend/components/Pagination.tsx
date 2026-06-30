@@ -1,6 +1,7 @@
 import { PER_PAGE } from "@/lib/api";
 import { getLocale } from "@/lib/i18n-server";
 import { getDictFor } from "@/lib/i18n";
+import { localeHref } from "@/lib/locale-link";
 
 /** 服务端渲染的翻页控件：基于 ?page= 查询参数 */
 export default async function Pagination({
@@ -22,12 +23,13 @@ export default async function Pagination({
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
   if (totalPages <= 1) return null;
 
+  const localizedBase = localeHref(basePath, locale);
   const href = (p: number) => {
     const sp = new URLSearchParams(query);
     if (p > 1) sp.set("page", String(p));
     else sp.delete("page");
     const s = sp.toString();
-    return s ? `${basePath}?${s}` : basePath;
+    return s ? `${localizedBase}?${s}` : localizedBase;
   };
 
   // 生成页码窗口：首页、当前±2、末页，中间省略

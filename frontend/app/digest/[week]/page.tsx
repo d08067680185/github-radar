@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import { getDict, getLocale } from "@/lib/i18n-server";
+import { localeHref } from "@/lib/locale-link";
 
 export const revalidate = 3600;
 
@@ -47,7 +48,7 @@ export default async function DigestDetailPage({
 
   return (
     <>
-      <a href="/digest" style={{ fontSize: 13, color: "var(--muted)" }}>{t.digest_back}</a>
+      <a href={localeHref("/digest", locale)} style={{ fontSize: 13, color: "var(--muted)" }}>{t.digest_back}</a>
       <h1 className="page-title">📰 {week}</h1>
       <p className="page-sub">{t.digest_items(d.item_count)}</p>
 

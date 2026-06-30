@@ -3,6 +3,7 @@
 import type { Project } from "@/lib/types";
 import { projectSummary, isSyntheticSummary } from "@/lib/format";
 import { useLocale } from "@/lib/i18n-client";
+import { localeHref } from "@/lib/locale-link";
 import CompareButton from "./CompareButton";
 
 function fmt(n: number): string {
@@ -35,7 +36,7 @@ export default function ProjectCard({
       <div className={`rank${medal}`}>{rank}</div>
 
       <div className="body">
-        <a className="repo-name" href={`/repo/${project.full_name}`}>
+        <a className="repo-name" href={localeHref(`/repo/${project.full_name}`, locale)}>
           {project.full_name}
         </a>
         <div className={`desc ${isSyntheticSummary(project, locale) ? "desc-faint" : ""}`}>

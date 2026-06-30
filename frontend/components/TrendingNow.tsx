@@ -1,10 +1,13 @@
 import { api } from "@/lib/api";
-import { getDict } from "@/lib/i18n-server";
+import { getLocale } from "@/lib/i18n-server";
+import { getDictFor } from "@/lib/i18n";
+import { localeHref } from "@/lib/locale-link";
 
 // 首页「本周热门」：来自访客真实行为的热门搜索 + 最多人看的项目（隐私友好聚合）。
 // async server 组件，自取数、数据为空时整体自隐藏（冷启动友好）。
 export default async function TrendingNow() {
-  const t = await getDict();
+  const locale = await getLocale();
+  const t = getDictFor(locale);
   const [searches, repos] = await Promise.all([
     api.topSearches(7, 8).catch(() => []),
     api.topRepos(7, 6).catch(() => []),
@@ -23,7 +26,7 @@ export default async function TrendingNow() {
           <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 8 }}>{t.hot_searches}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {searches.map((s) => (
-              <a key={s.query} className="chip" href={`/search?q=${encodeURIComponent(s.query)}`}>
+              <a key={s.query} className="chip" href={localeHref(`/search?q=${encodeURIComponent(s.query)}`, locale)}>
                 {s.query}
                 <span style={{ color: "var(--faint)", marginLeft: 6, fontSize: 12 }}>{s.count}</span>
               </a>
@@ -45,7 +48,7 @@ export default async function TrendingNow() {
             {repos.map((p, i) => (
               <a
                 key={p.full_name}
-                href={`/repo/${p.full_name}`}
+                href={localeHref(`/repo/${p.full_name}`, locale)}
                 style={{
                   background: "var(--surface)", border: "1px solid var(--border)",
                   borderRadius: 12, padding: "12px 14px", textDecoration: "none", display: "block",

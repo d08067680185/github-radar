@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useLocale } from "@/lib/i18n-client";
+import { localeHref } from "@/lib/locale-link";
 
 export default function ForgotPage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
@@ -49,7 +50,7 @@ export default function ForgotPage() {
           </button>
         </form>
         <p style={{ textAlign: "center", margin: "12px 0 0" }}>
-          <a href="/account" style={{ fontSize: 13, color: "var(--muted)" }}>{t.toLogin}</a>
+          <a href={localeHref("/account", locale)} style={{ fontSize: 13, color: "var(--muted)" }}>{t.toLogin}</a>
         </p>
       </div>
     </div>

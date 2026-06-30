@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { projectSummary, aiSummary } from "@/lib/format";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import { catName } from "@/lib/i18n";
+import { localeHref } from "@/lib/locale-link";
 import RankingList from "@/components/RankingList";
 import StarTrend from "@/components/StarTrend";
 import GrowthBadges from "@/components/GrowthBadges";
@@ -91,7 +92,7 @@ export default async function RepoPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <a href="/" style={{ fontSize: 13, color: "var(--muted)" }}>{t.backToList}</a>
+      <a href={localeHref("/", locale)} style={{ fontSize: 13, color: "var(--muted)" }}>{t.backToList}</a>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
         <h1 className="page-title">{project.full_name}</h1>
         <div style={{ marginTop: 28, display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -100,7 +101,7 @@ export default async function RepoPage({
           <FavoriteButton fullName={project.full_name} />
         </div>
       </div>
-      <a href={`/org/${project.owner}`} style={{ fontSize: 13, color: "var(--muted)", display: "inline-block", margin: "0 0 8px" }}>
+      <a href={localeHref(`/org/${project.owner}`, locale)} style={{ fontSize: 13, color: "var(--muted)", display: "inline-block", margin: "0 0 8px" }}>
         {t.org_by_link(project.owner)}
       </a>
       {aiSummary(project, locale) && (
@@ -119,7 +120,7 @@ export default async function RepoPage({
         <span>🐛 {project.open_issues.toLocaleString()} open issues</span>
         {project.license && <span>📄 {project.license}</span>}
         {project.category && (
-          <a className="chip active" href={`/category/${project.category}`}>{catName(project.category, locale, project.category_name)}</a>
+          <a className="chip active" href={localeHref(`/category/${project.category}`, locale)}>{catName(project.category, locale, project.category_name)}</a>
         )}
       </div>
 
@@ -165,7 +166,7 @@ export default async function RepoPage({
       {project.topics.length > 0 && (
         <div style={{ margin: "16px 0" }}>
           {project.topics.map((topic) => (
-            <a className="topic-tag" key={topic} href={`/topic/${encodeURIComponent(topic)}`}>{topic}</a>
+            <a className="topic-tag" key={topic} href={localeHref(`/topic/${encodeURIComponent(topic)}`, locale)}>{topic}</a>
           ))}
         </div>
       )}

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import { projectSummary } from "@/lib/format";
+import { localeHref } from "@/lib/locale-link";
 import JsonLd from "@/components/JsonLd";
 import { collectionLd } from "@/lib/jsonld";
 import type { PublicList, PublicListItem } from "@/lib/types";
@@ -114,7 +115,7 @@ export default async function PublicListPage({
       )}
 
       <p className="page-sub" style={{ marginTop: 32, fontSize: 13 }}>
-        <a href="/">{t.list_footer}</a>
+        <a href={localeHref("/", locale)}>{t.list_footer}</a>
       </p>
     </>
   );

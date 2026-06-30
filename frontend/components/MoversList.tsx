@@ -2,6 +2,7 @@
 
 import type { Mover } from "@/lib/types";
 import { useLocale } from "@/lib/i18n-client";
+import { localeHref } from "@/lib/locale-link";
 
 function fmt(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
@@ -14,7 +15,7 @@ export default function MoversList({
   movers: Mover[];
   startRank?: number;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   if (!movers.length) {
     return <p className="page-sub">{t.tw_empty}</p>;
   }
@@ -38,7 +39,7 @@ export default function MoversList({
           >
             <div className={`rank${medal}`} style={{ minWidth: 28, textAlign: "center" }}>{rank}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <a className="repo-name" href={`/repo/${m.full_name}`}>{m.full_name}</a>
+              <a className="repo-name" href={localeHref(`/repo/${m.full_name}`, locale)}>{m.full_name}</a>
               <div style={{ fontSize: 12, color: "var(--faint)", marginTop: 3 }}>
                 {m.language && <>{m.language} · </>}⭐ {fmt(m.stars)} · {t.score} {m.score}
               </div>

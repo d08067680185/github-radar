@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { authFetch } from "@/lib/auth";
 import { useLocale } from "@/lib/i18n-client";
+import { localeHref } from "@/lib/locale-link";
 import type { Favorite } from "@/lib/types";
 
 function fmt(n: number): string {
@@ -121,6 +122,7 @@ function FavRow({
   onRemove: (fullName: string) => void;
   t: ReturnType<typeof useLocale>["t"];
 }) {
+  const { locale } = useLocale();
   const p = fav.project;
   const [tagStr, setTagStr] = useState(fav.tags.join(", "));
   const [note, setNote] = useState(fav.note || "");
@@ -128,7 +130,7 @@ function FavRow({
   return (
     <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "12px 16px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
-        <a className="repo-name" href={`/repo/${p.full_name}`}>{p.full_name}</a>
+        <a className="repo-name" href={localeHref(`/repo/${p.full_name}`, locale)}>{p.full_name}</a>
         <span style={{ fontSize: 13, color: "var(--muted)", whiteSpace: "nowrap" }}>⭐ {fmt(p.stars)}</span>
       </div>
       {p.description && (

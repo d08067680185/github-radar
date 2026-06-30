@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { api } from "@/lib/api";
-import { getDict } from "@/lib/i18n-server";
+import { getLocale } from "@/lib/i18n-server";
+import { getDictFor } from "@/lib/i18n";
+import { localeHref } from "@/lib/locale-link";
 
 export const revalidate = 3600;
 
@@ -28,7 +30,8 @@ function sizeFor(count: number, max: number): number {
 }
 
 export default async function TopicsPage() {
-  const t = await getDict();
+  const locale = await getLocale();
+  const t = getDictFor(locale);
   const topics = await api.topics(80).catch(() => []);
   const max = topics.reduce((m, x) => Math.max(m, x.count), 0);
 
@@ -41,7 +44,7 @@ export default async function TopicsPage() {
         {topics.map((tp) => (
           <a
             key={tp.slug}
-            href={`/topic/${encodeURIComponent(tp.slug)}`}
+            href={localeHref(`/topic/${encodeURIComponent(tp.slug)}`, locale)}
             style={{
               fontSize: sizeFor(tp.count, max),
               color: "var(--text)",

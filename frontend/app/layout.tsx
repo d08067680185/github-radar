@@ -5,6 +5,7 @@ import { CompareProvider } from "@/lib/compare";
 import { LocaleProvider } from "@/lib/i18n-client";
 import { getLocale, getCanonicalPath } from "@/lib/i18n-server";
 import { getDictFor } from "@/lib/i18n";
+import { localeHref } from "@/lib/locale-link";
 import Nav from "@/components/Nav";
 import ThemeToggle from "@/components/ThemeToggle";
 import LocaleToggle from "@/components/LocaleToggle";
@@ -65,7 +66,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <a href="#main" className="skip-link">{t.skip_to_content}</a>
               <header className="site">
                 <div className="container inner">
-                  <a href="/" className="logo">🛰️ GitHub Radar</a>
+                  <a href={localeHref("/", locale)} className="logo">🛰️ GitHub Radar</a>
                   <Nav />
                   <CommandPaletteTrigger />
                   <LocaleToggle />
@@ -77,8 +78,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <div className="container">
                   GitHub Radar · {t.footer}
                   <DataFreshness />
-                  <a href="/topics">{t.nav_topics}</a>
-                  <a href="/about">{t.nav_about}</a>
+                  <a href={localeHref("/topics", locale)}>{t.nav_topics}</a>
+                  <a href={localeHref("/about", locale)}>{t.nav_about}</a>
                   <a href={locale === "en" ? "/feed/new.xml?lang=en" : "/feed/new.xml"}>{t.rss}</a>
                 </div>
               </footer>

@@ -9,7 +9,7 @@ from sqlalchemy import select, func, case
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import Project, CollectLog
+from app.models import Project, CollectLog, ProjectSnapshot, Subscriber, AnalyticsEvent
 from app.auth import require_admin
 
 router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(require_admin)])
@@ -75,6 +75,38 @@ def data_quality(db: Session = Depends(get_db)):
             {"at": row.created_at.isoformat(), "status": row.status} if row else None
         )
 
+    # 数据覆盖率
+    unclassified = db.execute(
+        select(func.count()).select_from(Project).where(
+            (Project.category.is_(None)) | (Project.category == "")
+        )
+    ).scalar_one()
+    unclassified_pct = round(unclassified / total * 100, 1) if total else 0
+
+    with_summary = db.execute(
+        select(func.count()).select_from(Project).where(Project.readme_summary.is_not(None))
+    ).scalar_one()
+    ai_summary_coverage = round(with_summary / total * 100, 1) if total else 0
+
+    # 有 ≥7 条快照的项目数（使用子查询）
+    snap_subq = (
+        select(ProjectSnapshot.project_id, func.count().label("cnt"))
+        .group_by(ProjectSnapshot.project_id)
+        .having(func.count() >= 7)
+        .subquery()
+    )
+    with_7snap = db.execute(select(func.count()).select_from(snap_subq)).scalar_one()
+    snapshot_coverage_7d = round(with_7snap / total * 100, 1) if total else 0
+
+    # 订阅者统计
+    active_subscribers = db.execute(
+        select(func.count()).select_from(Subscriber).where(Subscriber.active.is_(True))
+    ).scalar_one()
+    week_cut = datetime.now(timezone.utc) - timedelta(days=7)
+    new_subscribers_7d = db.execute(
+        select(func.count()).select_from(Subscriber).where(Subscriber.created_at >= week_cut)
+    ).scalar_one()
+
     return {
         "total_projects": total,
         "score_distribution": score_dist,
@@ -85,5 +117,52 @@ def data_quality(db: Session = Depends(get_db)):
         "archived": db.execute(
             select(func.count()).select_from(Project).where(Project.is_archived.is_(True))
         ).scalar_one(),
-        "with_snapshots_pct": None,  # 留待快照积累后计算
+        "unclassified_pct": unclassified_pct,
+        "ai_summary_coverage": ai_summary_coverage,
+        "snapshot_coverage_7d": snapshot_coverage_7d,
+        "active_subscribers": active_subscribers,
+        "new_subscribers_7d": new_subscribers_7d,
+    }
+
+
+@router.get("/analytics-summary")
+def analytics_summary(db: Session = Depends(get_db)):
+    """分析数据概览：近7天搜索量、浏览量、Top10搜索词、Hot项目。"""
+    week_cut = datetime.now(timezone.utc) - timedelta(days=7)
+
+    total_searches_7d = db.execute(
+        select(func.count()).select_from(AnalyticsEvent).where(
+            AnalyticsEvent.kind == "search",
+            AnalyticsEvent.created_at >= week_cut,
+        )
+    ).scalar_one()
+
+    total_views_7d = db.execute(
+        select(func.count()).select_from(AnalyticsEvent).where(
+            AnalyticsEvent.kind == "repo_view",
+            AnalyticsEvent.created_at >= week_cut,
+        )
+    ).scalar_one()
+
+    top_searches = db.execute(
+        select(AnalyticsEvent.key, func.count().label("cnt"))
+        .where(AnalyticsEvent.kind == "search", AnalyticsEvent.created_at >= week_cut)
+        .group_by(AnalyticsEvent.key)
+        .order_by(func.count().desc())
+        .limit(10)
+    ).all()
+
+    top_repos = db.execute(
+        select(AnalyticsEvent.key, func.count().label("cnt"))
+        .where(AnalyticsEvent.kind == "repo_view", AnalyticsEvent.created_at >= week_cut)
+        .group_by(AnalyticsEvent.key)
+        .order_by(func.count().desc())
+        .limit(10)
+    ).all()
+
+    return {
+        "total_searches_7d": total_searches_7d,
+        "total_views_7d": total_views_7d,
+        "top_searches": [{"key": r.key, "count": r.cnt} for r in top_searches],
+        "top_repos": [{"key": r.key, "count": r.cnt} for r in top_repos],
     }

@@ -1,5 +1,6 @@
 import type { Standing } from "@/lib/types";
 import { type Locale, type Dict, catName } from "@/lib/i18n";
+import { localeHref } from "@/lib/locale-link";
 
 // 详情页「领域定位」：项目在其所属领域内的排名 / 百分位 + 领域 Top5 对照。
 // server 组件，纯展示。standing.category 为 null 时不渲染（调用方已 guard，双保险）。
@@ -51,7 +52,7 @@ export default function StandingCard({
                   }}
                 >
                   <span style={{ color: "var(--muted)", width: 24 }}>#{i + 1}</span>
-                  <a href={`/repo/${p.full_name}`} style={{ color: "var(--accent)", textDecoration: "none", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <a href={localeHref(`/repo/${p.full_name}`, locale)} style={{ color: "var(--accent)", textDecoration: "none", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {p.full_name}
                   </a>
                   {isCurrent && (
