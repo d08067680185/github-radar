@@ -48,9 +48,15 @@ def test_no_match_returns_none():
     assert classify([], "Brainfuck", "something totally unrelated zzz") is None
 
 
+def test_agent_skills_category():
+    # 技能包专门 topic 优先于 ai-ml 的泛化 agent/ai 关键词
+    assert classify(["claude-skills", "ai"], "Python", None) == "agent-skills"
+    assert classify(["agent-skills"], "TypeScript", None) == "agent-skills"
+
+
 def test_all_categories_shape():
     cats = all_categories()
-    assert len(cats) == 12
+    assert len(cats) == 13
     assert all("slug" in c and "name" in c for c in cats)
 
 

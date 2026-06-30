@@ -224,6 +224,7 @@ export function getDictFor(locale: Locale): Dict {
 const CAT_LABELS: Record<string, { zh: string; en: string }> = {
   learning: { zh: "学习资源 / Awesome", en: "Learning / Awesome" },
   "ai-ml": { zh: "AI / 机器学习", en: "AI / ML" },
+  "agent-skills": { zh: "AI Agent Skills / 技能包", en: "AI Agent Skills" },
   "web-frontend": { zh: "Web 前端", en: "Web Frontend" },
   backend: { zh: "后端 / 框架", en: "Backend / Framework" },
   database: { zh: "数据库 / 存储", en: "Database / Storage" },
@@ -244,13 +245,14 @@ export function catName(slug: string | null | undefined, locale: Locale, fallbac
 
 // 领域固定顺序（决定星系团在画布上沿圆周的角度位置）
 export const CAT_ORDER = [
-  "ai-ml", "web-frontend", "backend", "database", "devops",
+  "ai-ml", "agent-skills", "web-frontend", "backend", "database", "devops",
   "data", "mobile", "security", "devtools", "game-graphics", "blockchain", "learning",
 ];
 
 // 领域 slug → 颜色（气泡星系 + 图例共用，11 色尽量区分）
 export const CAT_COLORS: Record<string, string> = {
   "ai-ml": "#7c5cff",        // 紫
+  "agent-skills": "#d946ef", // 紫红
   "web-frontend": "#2dd4bf", // 青
   backend: "#3b82f6",        // 蓝
   database: "#f59e0b",       // 琥珀

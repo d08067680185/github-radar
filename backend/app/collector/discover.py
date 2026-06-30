@@ -45,6 +45,15 @@ FLAGSHIP_REPOS = [
     "huggingface/transformers", "langchain-ai/langchain", "ggml-org/llama.cpp",
 ]
 
+# AI Agent Skills 细分领域：按 topic 主动发现（head/rising/active 三路纯按 star/时间，
+# 覆盖不到这类 star 不算顶尖但数量可观的新兴领域，曾漏抓 anbeime/skill 等）。
+# 注意：GitHub 仓库搜索的 topic: 限定符不支持 OR 组合（实测 "topic:a OR topic:b" 命中数恒为 0），
+# 必须逐 topic 单独查询再合并去重。
+SKILL_TOPICS = [
+    "claude-skills", "agent-skills", "claude-skill", "agent-skill",
+    "claude-code-skill", "skill-md", "agentskills",
+]
+
 
 def discover(db: Session, min_stars: int | None = None, max_repos: int | None = None) -> int:
     """拉取热门仓库并 upsert。返回处理的仓库数。"""
@@ -105,6 +114,23 @@ def discover(db: Session, min_stars: int | None = None, max_repos: int | None = 
         except Exception as e:
             logger.warning("旗舰种子抓取失败（跳过）：%s", e)
             breakdown["flagship"] = 0
+
+        # 第六路：AI Agent Skills 细分领域（按 topic 主动发现，best-effort）
+        try:
+            skills_found = 0
+            for topic in SKILL_TOPICS:
+                found = client.search_repos_sharded(
+                    min_stars=30, max_total=150, extra_q=f"topic:{topic}",
+                )
+                for r in found:
+                    if r["github_id"] not in merged:
+                        skills_found += 1
+                    merged[r["github_id"]] = r
+            breakdown["skills"] = skills_found
+            logger.info("策略 skills：%d 个 topic，新增 %d", len(SKILL_TOPICS), skills_found)
+        except Exception as e:
+            logger.warning("skills 主题发现失败（跳过）：%s", e)
+            breakdown["skills"] = 0
 
         repos = list(merged.values())
         quota = client.quota_remaining

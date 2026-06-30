@@ -18,6 +18,12 @@ CATEGORY_RULES: list[tuple[str, str, set[str]]] = [
         "exercises", "practice", "problems", "solutions", "notes", "examples",
         "cookbook", "reference", "snippets", "guide", "guides",
     }),
+    ("AI Agent Skills / 技能包", "agent-skills", {
+        "claude-skills", "claude-skill", "agent-skills", "agent-skill",
+        "claude-code-skill", "skill-md", "agentskills",
+        "skill-pack", "skill-marketplace", "skillset",
+        "gemini-skills", "openclaw-skills",
+    }),
     ("AI / 机器学习", "ai-ml", {
         "ai", "machine-learning", "deep-learning", "llm", "llms", "gpt", "nlp",
         "neural-network", "transformer", "diffusion", "agent", "agents", "rag",
