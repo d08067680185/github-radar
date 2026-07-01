@@ -6,6 +6,7 @@ import { projectSummary } from "@/lib/format";
 import { localeHref } from "@/lib/locale-link";
 import JsonLd from "@/components/JsonLd";
 import { collectionLd } from "@/lib/jsonld";
+import ShareButton from "@/components/ShareButton";
 import type { PublicList, PublicListItem } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -77,7 +78,19 @@ export default async function PublicListPage({
   return (
     <>
       <JsonLd data={ld} />
-      <h1 className="page-title">📚 {list.title}</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+        <h1 className="page-title">📚 {list.title}</h1>
+        <div style={{ marginTop: 6 }}>
+          <ShareButton
+            title={list.title}
+            text={
+              locale === "en"
+                ? `${list.title} — a curated collection of ${list.count} open-source projects on GitHub Radar`
+                : `${list.title} — GitHub Radar 上的精选开源项目收藏集，共 ${list.count} 个项目`
+            }
+          />
+        </div>
+      </div>
       <p className="page-sub">{t.list_count(list.count)}</p>
 
       {list.count === 0 ? (

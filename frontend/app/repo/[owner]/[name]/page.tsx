@@ -97,7 +97,18 @@ export default async function RepoPage({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
         <h1 className="page-title">{project.full_name}</h1>
         <div style={{ marginTop: 28, display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <ShareButton fullName={project.full_name} score={project.score} />
+          <ShareButton
+            title={
+              locale === "en"
+                ? `${project.full_name} — GitHub Radar score ${project.score}`
+                : `${project.full_name} — GitHub Radar 综合评分 ${project.score}`
+            }
+            text={
+              locale === "en"
+                ? `${project.full_name} scores ${project.score}/100 on GitHub Radar`
+                : `${project.full_name} 在 GitHub Radar 的综合评分是 ${project.score}/100`
+            }
+          />
           <CompareButton fullName={project.full_name} />
           <FavoriteButton fullName={project.full_name} />
           <WatchButton fullName={project.full_name} />

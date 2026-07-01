@@ -13,6 +13,7 @@ import DataFreshness from "@/components/DataFreshness";
 import CompareBar from "@/components/CompareBar";
 import CommandPalette from "@/components/CommandPalette";
 import CommandPaletteTrigger from "@/components/CommandPaletteTrigger";
+import ShareButton from "@/components/ShareButton";
 
 // 防止主题闪烁：在首屏绘制前读取 localStorage 设置 data-theme
 const THEME_INIT = `(function(){try{var t=localStorage.getItem('ghradar_theme');if(t==='light')document.documentElement.dataset.theme='light';}catch(e){}})();`;
@@ -81,6 +82,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <a href={localeHref("/topics", locale)}>{t.nav_topics}</a>
                   <a href={localeHref("/about", locale)}>{t.nav_about}</a>
                   <a href={locale === "en" ? "/feed/new.xml?lang=en" : "/feed/new.xml"}>{t.rss}</a>
+                  <ShareButton title={t.meta_title} text={t.meta_og_desc} />
                 </div>
               </footer>
               <CompareBar />
