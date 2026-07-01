@@ -14,13 +14,16 @@ class Settings(BaseSettings):
     discover_max_repos: int = 300
 
     # 多维度发现：除头部按 star 外，再补两路候选池
-    # 新秀：近 N 天创建、已有 star 的项目（成长快）
-    discover_rising_max: int = 500
+    # 新秀：近 N 天创建、已有 star 的项目（成长快）。星数门槛独立于 head，
+    # 比 discover_min_stars 低很多——刚起步的好项目不该被 500 星门槛挡在库外。
+    discover_rising_max: int = 800
     discover_rising_days: int = 365
-    # 活跃中小：star 在 [min, active_star_max]、近 N 天有 push 的项目
-    discover_active_max: int = 500
+    discover_rising_min_stars: int = 200
+    # 活跃中小：star 在 [min, active_star_max]、近 N 天有 push 的项目。同理独立降门槛。
+    discover_active_max: int = 800
     discover_active_days: int = 30
     discover_active_star_max: int = 15000
+    discover_active_min_stars: int = 150
     # 僵尸清理：超过 N 天未被任何发现命中则删除
     discover_stale_days: int = 30
 

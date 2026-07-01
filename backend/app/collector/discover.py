@@ -72,9 +72,11 @@ def discover(db: Session, min_stars: int | None = None, max_repos: int | None = 
 
         strategies = [
             ("head", dict(min_stars=min_stars, max_total=max_repos)),
-            ("rising", dict(min_stars=min_stars, max_total=settings.discover_rising_max,
+            ("rising", dict(min_stars=settings.discover_rising_min_stars,
+                            max_total=settings.discover_rising_max,
                             extra_q=f"created:>={rising_since}")),
-            ("active", dict(min_stars=min_stars, max_total=settings.discover_active_max,
+            ("active", dict(min_stars=settings.discover_active_min_stars,
+                            max_total=settings.discover_active_max,
                             extra_q=f"pushed:>={active_since}",
                             star_max=settings.discover_active_star_max)),
         ]
