@@ -9,7 +9,7 @@ from app.collector.discover import discover, prune_stale
 from app.collector.snapshot import take_snapshots
 from app.scorer.compute import compute_all
 from app.scorer.summarize import summarize_backfill
-from app.cache import invalidate_all
+from app.cache import invalidate_all, acquire_job_lock
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,9 @@ def _alert(exc: Exception):
 
 def daily_pipeline():
     """发现 → 快照 → 评分 → 失效缓存。失败则上报告警,不中断进程。"""
+    if not acquire_job_lock("daily_pipeline"):
+        logger.info("daily_pipeline 今日已由其他 worker 执行，本次跳过（多 worker 去重）")
+        return
     db = SessionLocal()
     try:
         logger.info("=== 每日流水线开始 ===")
@@ -60,6 +63,9 @@ def daily_pipeline():
 
 def weekly_digest():
     """每周：先存档本周精选（无论 SMTP），再给订阅者发邮件（SMTP 未配置则跳过）。"""
+    if not acquire_job_lock("weekly_digest"):
+        logger.info("weekly_digest 今日已由其他 worker 执行，本次跳过（多 worker 去重）")
+        return
     from app.mailer import send_weekly_digest
     from app.digest import archive_current_digest
     from app.cache import invalidate_all
@@ -79,6 +85,9 @@ def weekly_digest():
 
 def check_releases():
     """检查关注项目的新 release 并发邮件通知。"""
+    if not acquire_job_lock("check_releases"):
+        logger.info("check_releases 今日已由其他 worker 执行，本次跳过（多 worker 去重）")
+        return
     import asyncio
     from app.notifier import check_release_notifications
     try:

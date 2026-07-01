@@ -51,14 +51,32 @@ def cached(name: str, params: dict, loader, ttl: int = _DEFAULT_TTL):
         return loader()
 
 
+def acquire_job_lock(name: str, ttl: int = 21600) -> bool:
+    """跨 worker 定时任务去重：uvicorn --workers N 时每个 worker 各自起一个 APScheduler
+    实例，同一 cron 任务会在同一时刻被触发 N 次。以「任务名+当天日期」为 key 做 Redis
+    NX 抢锁，只有抢到的 worker 真正执行，其余直接跳过。
+
+    Redis 不可用时放行（返回 True）——宁可偶发重复跑，也不让整条流水线因 Redis 挂了而彻底不跑。
+    """
+    if _client is None:
+        return True
+    from datetime import datetime, timezone
+    key = f"{_ROOT}:jl:{name}:{datetime.now(timezone.utc).date().isoformat()}"
+    try:
+        return bool(_client.set(key, "1", nx=True, ex=ttl))
+    except Exception as e:  # noqa: BLE001
+        logger.warning("任务锁获取失败，放行执行：%s", e)
+        return True
+
+
 def invalidate_all():
     """清空本系统所有缓存（pipeline 跑完调用）。扫 root 前缀，连旧版本残留一并清。"""
     if _client is None:
         return 0
     try:
         keys = list(_client.scan_iter(f"{_ROOT}:*"))
-        # 保留限流键（ghradar:rl:*），只清数据缓存
-        keys = [k for k in keys if not k.startswith(f"{_ROOT}:rl:")]
+        # 保留限流键（ghradar:rl:*）和任务锁（ghradar:jl:*），只清数据缓存
+        keys = [k for k in keys if not k.startswith(f"{_ROOT}:rl:") and not k.startswith(f"{_ROOT}:jl:")]
         if keys:
             _client.delete(*keys)
         logger.info("缓存已失效：%d 个 key", len(keys))

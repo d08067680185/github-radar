@@ -80,7 +80,7 @@ test("组织聚合页加载", async ({ page }) => {
 
 test("周报存档列表加载", async ({ page }) => {
   await page.goto("/digest");
-  await expect(page.getByRole("heading", { name: /周报/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /周报/, level: 1 })).toBeVisible();
 });
 
 test("语言统计页加载且显示语言列表", async ({ page }) => {
