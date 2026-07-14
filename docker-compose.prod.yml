@@ -12,7 +12,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?must set}
       POSTGRES_DB: ${POSTGRES_DB:-github_radar}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      # 主机目录挂载（勿用命名卷）：2026-07-15 Docker Desktop 重置 + down -v 连环事故
+      # 把命名卷里的快照历史清了两次——bind mount 后 down -v / Docker 重置都动不到数据
+      - ./pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-radar}"]
       interval: 10s
@@ -55,6 +57,3 @@ services:
       SITE_URL: ${SITE_URL}
     depends_on:
       - backend
-
-volumes:
-  pgdata:

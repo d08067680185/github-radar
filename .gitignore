@@ -17,3 +17,4 @@ test-results/
 # 本地部署/自动同步产物
 auto-pull.log
 auto-pull.sh
+pgdata/
