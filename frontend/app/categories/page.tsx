@@ -4,7 +4,7 @@ import { getDict, getLocale } from "@/lib/i18n-server";
 import { catName } from "@/lib/i18n";
 import RankingList from "@/components/RankingList";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const { getLocale } = await import("@/lib/i18n-server");
   const en = (await getLocale()) === "en";

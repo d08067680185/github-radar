@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 import { getDict } from "@/lib/i18n-server";
 import SubscribeBox from "@/components/SubscribeBox";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { getLocale } = await import("@/lib/i18n-server");

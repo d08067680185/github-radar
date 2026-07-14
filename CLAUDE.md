@@ -143,6 +143,7 @@ GitHub Search API 单查询硬上限 1000 条。`github_client.search_repos_shar
 > 部署关键约定（踩坑总结）：
 > - **改了带 `cached()` 的接口响应结构 → 必 `_CACHE_VERSION += 1`**（见缓存段），否则 stale→500。
 > - **数据/列表页一律 `export const dynamic="force-dynamic"`，别用 `revalidate` ISR**——否则部署/构建期后端不可达会把空数据烤进静态页长期服务。
+> - **fetch 一律走 `lib/api.ts` 的 `get/getPaged`（默认 `cache:"no-store"`），别给 fetch 传 `next:{revalidate}`**——`force-dynamic` 管不住 fetch 级 Data Cache（2026-07-14 事故：空库期的 `[]` 被持久化到容器磁盘缓存，后端恢复后全站仍「暂无数据」，需手动清 `.next/cache` 才恢复）。仅 extras/热门统计等低风险端点可显式传 revalidate。新鲜度靠后端 Redis 缓存兜底，前端不缓存不会加重 DB 压力。
 > - **只改前端就只 rebuild `frontend`**；改后端或加迁移要 rebuild `backend`（入口自动迁移）。
 > - 具体部署机/SSH/凭证等基础设施细节不写进本公开仓库（见私有部署笔记）。
 

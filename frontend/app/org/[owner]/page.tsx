@@ -7,7 +7,7 @@ import { localeHref } from "@/lib/locale-link";
 import RankingList from "@/components/RankingList";
 import SortSelect from "@/components/SortSelect";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 function fmt(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;

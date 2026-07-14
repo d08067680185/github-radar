@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 import { getLocale } from "@/lib/i18n-server";
 import { catName, catColor, CAT_ORDER } from "@/lib/i18n";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 export async function generateMetadata(): Promise<Metadata> {
   const en = (await getLocale()) === "en";
   return en

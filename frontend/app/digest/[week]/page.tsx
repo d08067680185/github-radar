@@ -4,7 +4,7 @@ import { api } from "@/lib/api";
 import { getDict, getLocale } from "@/lib/i18n-server";
 import { localeHref } from "@/lib/locale-link";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 function fmt(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);

@@ -16,7 +16,7 @@ import BadgeEmbed from "@/components/BadgeEmbed";
 import RadarChart from "@/components/RadarChart";
 import StandingCard from "@/components/StandingCard";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 async function load(owner: string, name: string) {
   try {

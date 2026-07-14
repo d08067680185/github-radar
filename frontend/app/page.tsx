@@ -10,7 +10,7 @@ import SubscribeBox from "@/components/SubscribeBox";
 import Pagination from "@/components/Pagination";
 import SortSelect from "@/components/SortSelect";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export default async function HomePage({
   searchParams,

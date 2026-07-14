@@ -5,13 +5,18 @@ import type {
 
 const API_BASE = process.env.API_BASE || "http://127.0.0.1:8077";
 
-// ISR：默认每 1 小时增量再生成（榜单日更，1h 足够新鲜又省压）
-const REVALIDATE = 3600;
+// 数据/列表类请求默认实时取（cache:"no-store"），新鲜度靠后端 Redis 缓存（TTL 1h）兜底。
+// 2026-07-14 事故：fetch Data Cache 把空库期的 [] 持久化到容器磁盘，后端恢复后全站仍
+// “暂无数据”（force-dynamic 也挡不住 fetch 级缓存）。只有明确传 revalidate 的低风险
+// 端点（extras/热门统计等）才走 ISR 缓存。
+function fetchOpts(revalidate?: number): RequestInit {
+  return revalidate === undefined
+    ? { cache: "no-store" }
+    : { next: { revalidate } };
+}
 
-async function get<T>(path: string, revalidate: number = REVALIDATE): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    next: { revalidate },
-  });
+async function get<T>(path: string, revalidate?: number): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, fetchOpts(revalidate));
   if (!res.ok) throw new Error(`API ${path} -> ${res.status}`);
   return res.json();
 }
@@ -21,8 +26,8 @@ export interface Paged {
   items: Project[];
   total: number;
 }
-async function getPaged(path: string, revalidate: number = REVALIDATE): Promise<Paged> {
-  const res = await fetch(`${API_BASE}${path}`, { next: { revalidate } });
+async function getPaged(path: string, revalidate?: number): Promise<Paged> {
+  const res = await fetch(`${API_BASE}${path}`, fetchOpts(revalidate));
   if (!res.ok) throw new Error(`API ${path} -> ${res.status}`);
   const total = Number(res.headers.get("X-Total-Count") || 0);
   const items = await res.json();

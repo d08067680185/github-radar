@@ -4,7 +4,7 @@ import { getLocale } from "@/lib/i18n-server";
 import { getDictFor } from "@/lib/i18n";
 import { localeHref } from "@/lib/locale-link";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { getLocale } = await import("@/lib/i18n-server");
