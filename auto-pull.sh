@@ -4,6 +4,16 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
 REPO_DIR="/Users/xiaofengdai/Documents/claude/github-radar"
 LOG_FILE="$REPO_DIR/auto-pull.log"
 
+# ── 并发锁：构建期间后续 cron 直接退出，防连续 push 叠加并发构建压垮整机
+#    （2026-07-16 japanese 事故：5 个 build 并发、load 9.8、全站超时）
+LOCK_DIR="/tmp/radar-autopull.lock"
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+    lock_age=$(( $(date +%s) - $(stat -f %m "$LOCK_DIR" 2>/dev/null || echo 0) ))
+    if [ "$lock_age" -lt 7200 ]; then exit 0; fi
+    rm -rf "$LOCK_DIR"; mkdir "$LOCK_DIR" || exit 0
+fi
+trap 'rm -rf "$LOCK_DIR"' EXIT
+
 cd "$REPO_DIR"
 
 if ! git fetch origin main >> "$LOG_FILE" 2>&1; then
